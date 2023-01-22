@@ -54,6 +54,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 ),
                 const SizedBox(height: 32),
                 TextFormField(
+                  style: kInputStyle,
                   controller: emailController,
                   onChanged: (value) {
                     setState(() {
@@ -71,7 +72,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   },
                   decoration: kTextFieldDecoration.copyWith(
                     prefixIcon: const Icon(Icons.email),
-                    hintText: 'email address',
+                    hintText: 'Email address',
                     hintStyle: kTextStyle,
                     errorStyle: kTextStyle.copyWith(color: Colors.redAccent),
                   ),
@@ -79,19 +80,15 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 ),
                 const SizedBox(height: 40),
                 RectangularRoundedButton(
-                  buttonName: 'Submit',
+                  buttonName: 'Send Link',
                   onPressed: () async {
                     if (formKey.currentState!.validate()) {
                       try {
                         await FirebaseAuth.instance
                             .sendPasswordResetEmail(email: email!);
                         clearText();
-                        showMyDialog(
-                          context,
-                          'Info.',
-                          'Verification link sent successfully.',
-                          isError: false,
-                        );
+                        showMyBanner(
+                            context, 'Verification link sent successfully.');
                       } on FirebaseAuthException catch (e) {
                         print(e.code);
                         if (e.code == "user-not-found") {

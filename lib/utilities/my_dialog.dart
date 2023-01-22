@@ -2,6 +2,30 @@ import 'package:flutter/material.dart';
 
 import 'constants.dart';
 
+Future showMyBanner(context, text) async {
+  ScaffoldMessenger.of(context).showMaterialBanner(
+    MaterialBanner(
+      onVisible: () {
+        Future.delayed(Duration(milliseconds: 1200)).then((value) =>
+            ScaffoldMessenger.of(context).hideCurrentMaterialBanner());
+      },
+      content: Text(
+        text,
+        style: kTextStyle,
+      ),
+      backgroundColor: Colors.white70,
+      actions: [
+        TextButton(
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+          },
+          child: const Text('Dismiss', style: kInputStyle),
+        )
+      ],
+    ),
+  );
+}
+
 Future showMyDialog(context, String title, String msg,
     {int disposeAfterMillis = 2000, bool isError = true}) async {
   return showDialog(

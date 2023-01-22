@@ -1,38 +1,41 @@
 import 'package:dresssew/models/shop.dart';
 
 class Tailor {
-  String? id;
   String tailorName;
-  String? phoneNumber;
-  String? profileImageUrl;
   String email;
+  String? id;
+  Gender gender;
+  String? phoneNumber;
+  String? websiteUrl;
+  StitchingType stitchingType;
+  List<String> expertise;
+  String? profileImageUrl;
+  List<Rates> rates;
+  Shop? shop;
   int? experience;
   bool? customizes;
   String? onTimeDelivery;
   double? rating;
-  List<Orders>? orders;
-  List<Rates>? rates;
-  List<String>? expertise;
-  String? websiteUrl;
-  String? stitchingType;
-  Shop? shop;
+  List<OrdersPlaced> orders;
 
-  Tailor(
-      {this.id,
-      required this.tailorName,
-      this.phoneNumber,
-      this.shop,
-      required this.email,
-      this.experience,
-      this.customizes,
-      this.onTimeDelivery,
-      this.rating,
-      this.orders,
-      this.profileImageUrl,
-      this.rates,
-      this.expertise,
-      this.websiteUrl,
-      this.stitchingType});
+  Tailor({
+    this.id,
+    required this.tailorName,
+    this.phoneNumber,
+    this.shop,
+    required this.email,
+    this.experience,
+    this.customizes,
+    this.onTimeDelivery,
+    this.rating,
+    required this.gender,
+    this.orders = const [],
+    this.profileImageUrl,
+    this.rates = const [],
+    this.expertise = const [],
+    this.websiteUrl,
+    required this.stitchingType,
+  });
 
   static Tailor fromJson(Map<String, dynamic> json) => Tailor(
       id: json['id'],
@@ -40,15 +43,18 @@ class Tailor {
       phoneNumber: json['phone_number'],
       shop: Shop.fromJson(json['shop']),
       email: json['email'],
+      gender: getGender(json['gender']),
       experience: json['experience'],
       customizes: json['customizes'],
       onTimeDelivery: json['on_time_delivery'],
       rating: json['rating'],
-      orders: (json['orders'] as List).map((e) => Orders.fromJson(e)).toList(),
+      orders: (json['orders'] as List)
+          .map((e) => OrdersPlaced.fromJson(e))
+          .toList(),
       rates: (json['rates'] as List).map((e) => Rates.fromJson(e)).toList(),
       expertise: json['expertise'].cast<String>(),
       websiteUrl: json['website_url'],
-      stitchingType: json['stitching_type'],
+      stitchingType: getStitchingType(json['stitching_type']),
       profileImageUrl: json['profile_image_url']);
 
   Map<String, dynamic> toJson() => {
@@ -56,21 +62,22 @@ class Tailor {
         'tailor_name': tailorName,
         'phone_number': phoneNumber,
         'email': email,
+        'gender': gender!.name,
         'experience': experience,
         'shop': shop?.toJson(),
         'profile_image_url': profileImageUrl,
         'customizes': customizes,
         'on_time_delivery': onTimeDelivery,
         'rating': rating,
-        'orders': orders?.map((e) => e.toJson()).toList() ?? [],
-        'rates': rates?.map((e) => e.toJson()).toList() ?? [],
+        'orders': orders.map((e) => e.toJson()).toList() ?? [],
+        'rates': rates.map((e) => e.toJson()).toList() ?? [],
         'expertise': expertise,
         'website_url': websiteUrl,
-        'stitchingType': stitchingType,
+        'stitchingType': stitchingType.name,
       };
 }
 
-class Orders {
+class OrdersPlaced {
   String customerId;
   String customerName;
   int rating;
@@ -78,7 +85,7 @@ class Orders {
   String orderId;
   String deliveryDate;
 
-  Orders(
+  OrdersPlaced(
       {required this.customerId,
       required this.customerName,
       required this.rating,
@@ -86,7 +93,7 @@ class Orders {
       required this.orderId,
       required this.deliveryDate});
 
-  static Orders fromJson(Map<String, dynamic> json) => Orders(
+  static OrdersPlaced fromJson(Map<String, dynamic> json) => OrdersPlaced(
         customerId: json['customer_id'],
         customerName: json['customer_name'],
         rating: json['rating'],
@@ -120,4 +127,26 @@ class Rates {
         'category': category,
         'price': price,
       };
+}
+
+enum StitchingType {
+  gents,
+  ladies,
+  both,
+}
+
+StitchingType getStitchingType(String type) {
+  StitchingType stitchingType = type == StitchingType.gents.name
+      ? StitchingType.gents
+      : type == StitchingType.ladies.name
+          ? StitchingType.ladies
+          : StitchingType.both;
+  return stitchingType;
+}
+
+enum Gender { male, female }
+
+Gender getGender(String type) {
+  Gender gender = type == Gender.male.name ? Gender.male : Gender.female;
+  return gender;
 }

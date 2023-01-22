@@ -4,7 +4,6 @@ class Shop {
   String city;
   String country;
   int postalCode;
-  ShopLocation shopLocation;
   String? logoUrl;
   List<String>? shopImages;
 
@@ -14,7 +13,6 @@ class Shop {
       required this.name,
       required this.country,
       required this.postalCode,
-      required this.shopLocation,
       this.logoUrl,
       this.shopImages});
 
@@ -25,7 +23,6 @@ class Shop {
       name: json['name'],
       country: json['country'],
       postalCode: json['postal_code'],
-      shopLocation: ShopLocation.fromJson(json['shop_location']),
       logoUrl: json['logo_url'],
       shopImages: json['shop_images'] as List<String>,
     );
@@ -37,24 +34,23 @@ class Shop {
         'city': city,
         'country': country,
         'postal_code': postalCode,
-        'shop_location': shopLocation.toJson(),
         'logo_url': logoUrl,
         'shop_images': shopImages,
       };
 }
 
-class ShopLocation {
-  double latitude;
-  double longitude;
-
-  ShopLocation(this.latitude, this.longitude);
-
-  static ShopLocation fromJson(Map<String, dynamic> json) {
-    return ShopLocation(json['latitude'], json['longitude']);
-  }
-
-  Map<String, dynamic> toJson() => {
-        'latitude': latitude,
-        'longitude': longitude,
-      };
-}
+// class ShopLocation {
+//   double latitude;
+//   double longitude;
+//
+//   ShopLocation(this.latitude, this.longitude);
+//
+//   static ShopLocation fromJson(Map<String, dynamic> json) {
+//     return ShopLocation(json['latitude'], json['longitude']);
+//   }
+//
+//   Map<String, dynamic> toJson() => {
+//         'latitude': latitude,
+//         'longitude': longitude,
+//       };
+// }
