@@ -50,7 +50,7 @@ const menExpertise = [
   "Costumes",
   "Party wear"
 ];
-const overallExpertise = [
+final overallExpertise = [
   "Casual",
   "Traditional",
   "Formal",

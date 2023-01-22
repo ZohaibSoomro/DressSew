@@ -1,30 +1,33 @@
 class Shop {
   String name;
   String address;
+  String? websiteUrl;
   String city;
   String country;
   int postalCode;
-  String? logoUrl;
-  List<String>? shopImages;
+  List<int> logoUrl;
+  List<List<int>> shopImagesBytes;
 
   Shop(
       {required this.address,
       required this.city,
       required this.name,
-      required this.country,
+      this.websiteUrl,
+      this.country = "Pakistan",
       required this.postalCode,
-      this.logoUrl,
-      this.shopImages});
+      this.logoUrl = const [],
+      this.shopImagesBytes = const []});
 
   static Shop fromJson(Map<String, dynamic> json) {
     return Shop(
       address: json['address'],
       city: json['city'],
       name: json['name'],
+      websiteUrl: json['website_url'],
       country: json['country'],
       postalCode: json['postal_code'],
-      logoUrl: json['logo_url'],
-      shopImages: json['shop_images'] as List<String>,
+      logoUrl: json['logo_url'].cast<int>(),
+      shopImagesBytes: json['shop_images'].cast<List<int>>(),
     );
   }
 
@@ -33,9 +36,10 @@ class Shop {
         'address': address,
         'city': city,
         'country': country,
+        'website_url': websiteUrl,
         'postal_code': postalCode,
         'logo_url': logoUrl,
-        'shop_images': shopImages,
+        'shop_images': shopImagesBytes,
       };
 }
 

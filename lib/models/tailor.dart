@@ -6,10 +6,9 @@ class Tailor {
   String? id;
   Gender gender;
   String? phoneNumber;
-  String? websiteUrl;
   StitchingType stitchingType;
   List<String> expertise;
-  String? profileImageUrl;
+  List<int> profileImageBytes;
   List<Rates> rates;
   Shop? shop;
   int? experience;
@@ -30,10 +29,9 @@ class Tailor {
     this.rating,
     required this.gender,
     this.orders = const [],
-    this.profileImageUrl,
+    this.profileImageBytes = const [],
     this.rates = const [],
     this.expertise = const [],
-    this.websiteUrl,
     required this.stitchingType,
   });
 
@@ -53,26 +51,24 @@ class Tailor {
           .toList(),
       rates: (json['rates'] as List).map((e) => Rates.fromJson(e)).toList(),
       expertise: json['expertise'].cast<String>(),
-      websiteUrl: json['website_url'],
       stitchingType: getStitchingType(json['stitching_type']),
-      profileImageUrl: json['profile_image_url']);
+      profileImageBytes: json['profile_image_bytes']);
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'tailor_name': tailorName,
         'phone_number': phoneNumber,
         'email': email,
-        'gender': gender!.name,
+        'gender': gender.name,
         'experience': experience,
         'shop': shop?.toJson(),
-        'profile_image_url': profileImageUrl,
+        'profile_image_bytes': profileImageBytes,
         'customizes': customizes,
         'on_time_delivery': onTimeDelivery,
         'rating': rating,
         'orders': orders.map((e) => e.toJson()).toList() ?? [],
         'rates': rates.map((e) => e.toJson()).toList() ?? [],
         'expertise': expertise,
-        'website_url': websiteUrl,
         'stitchingType': stitchingType.name,
       };
 }
