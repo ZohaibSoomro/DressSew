@@ -125,7 +125,7 @@ class _SignUpState extends State<SignUp> {
                         controller: emailController,
                         style: kInputStyle,
                         onChanged: (value) {
-                          email = value.trim() ?? '';
+                          email = value.trim();
                         },
                         validator: (val) {
                           if (val == null || val.isEmpty) {
@@ -252,14 +252,18 @@ class _SignUpState extends State<SignUp> {
                                   .createUserWithEmailAndPassword(
                                       email: email, password: password);
                               if (userCredentials.user != null) {
-                                await userCredentials.user!
-                                    .updateDisplayName(name);
-
-                                final docRef = await FirebaseFirestore.instance
-                                    .collection('customers')
-                                    .add(customerData.toJson());
-                                customerData.id = docRef.id;
-                                await docRef.update(customerData.toJson());
+                                userCredentials.user!
+                                    .updateDisplayName(name)
+                                    .then((value) {
+                                  FirebaseFirestore.instance
+                                      .collection('customers')
+                                      .add(customerData.toJson())
+                                      .then((docRef) {
+                                    customerData.id = docRef.id;
+                                    docRef.update(customerData.toJson());
+                                  });
+                                  print('"Customer DATA inserted.');
+                                });
                               }
                               setState(() {
                                 isLoading = false;
@@ -272,9 +276,15 @@ class _SignUpState extends State<SignUp> {
                                 await FirebaseAuth.instance
                                     .signInWithEmailAndPassword(
                                         email: email, password: password);
-                                Navigator.pushReplacementNamed(
-                                    context, TailorRegistration.id,
-                                    arguments: customerData);
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TailorRegistration(
+                                      customerData: customerData,
+                                      fromScreen: SignUp.id,
+                                    ),
+                                  ),
+                                );
                               } else {
                                 Navigator.pop(context);
                               }

@@ -58,7 +58,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   controller: emailController,
                   onChanged: (value) {
                     setState(() {
-                      email = value.trim() ?? '';
+                      email = value.trim();
                     });
                   },
                   validator: (val) {

@@ -1,5 +1,6 @@
-import 'dart:convert';
+import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dresssew/main.dart';
 import 'package:dresssew/models/customer.dart';
 import 'package:dresssew/models/shop.dart';
@@ -7,6 +8,7 @@ import 'package:dresssew/utilities/constants.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
 import 'package:dresssew/utilities/rectangular_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -17,11 +19,20 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/tailor.dart';
+import 'home.dart';
+import 'login.dart';
 
 class TailorRegistration extends StatefulWidget {
-  static const id = '/tailorRegistration';
+  final Customer customerData;
+  //from which screen user has navigated to this screen if its signup then pop back to login
+  //or if its login then push to home
+  final String fromScreen;
+
+  const TailorRegistration(
+      {super.key, required this.customerData, this.fromScreen = Login.id});
   @override
   _TailorRegitrationState createState() => _TailorRegitrationState();
 }
@@ -30,29 +41,38 @@ class _TailorRegitrationState extends State<TailorRegistration> {
   Customer? data;
   ImagePicker picker = ImagePicker();
   final formKey = GlobalKey<FormState>();
+  final shopFormKey = GlobalKey<FormState>();
   final phoneNoController = TextEditingController();
   String countryCode = '+92';
-  bool phoneNumberVerified = true;
-  bool isVerifyingPhoneNumber = false;
   final websiteUrlController = TextEditingController();
   final shopNameController = TextEditingController();
   final shopAddressController = TextEditingController();
   final cityController = TextEditingController();
   final postalCodeController = TextEditingController();
   Gender? gender;
+  bool isVerifyingPhoneNumber = false;
   bool isNextBtnPressed = false;
-  Uint8List? profileImageBytes;
-  Uint8List? logoImageBytes;
-  List<Uint8List> shopImagesBytesList = [];
-  Uint8List? initialImageBytes;
+  bool phoneNumberVerified = true;
+  bool isUploadingLogo = false;
+  bool isUploadingShop1Image = false;
+  bool isUploadingShop2Image = false;
+  bool isUploadingProfileImage = false;
+  bool isRegisterBtnPressed = false;
+  String? profileImageUrl;
+  String? logoImageUrl;
+  List<String?> shopImagesList = [];
+  String? initialImageUrl;
   StitchingType? stitchingType;
-
   List<String> selectedExpertise = [];
   List<String> unSelectedExpertise = [];
 
   final experienceController = TextEditingController();
   bool customizesDresses = false;
   Tailor? tailor;
+
+  bool isSavingDataInFirebase = false;
+
+  final storage = FirebaseStorage.instance.ref();
 
   @override
   void initState() {
@@ -66,19 +86,8 @@ class _TailorRegitrationState extends State<TailorRegistration> {
       }
     }
     overallExpertise.sort();
-    (rootBundle.load("assets/user.png")).then((value) => setState(() => {
-          initialImageBytes = value.buffer.asUint8List(),
-          profileImageBytes = initialImageBytes
-        }));
-    Future.delayed(const Duration(milliseconds: 10)).then((value) {
-      // data = ModalRoute.of(context)!.settings.arguments as Customer;
-      // print(data?.toJson());
-      data = Customer.fromJson(
-        json.decode(
-            '{"address": null,"is_registered":false, "name": "Zohaib Hassan", "gender":"male","orders": [], "phone_number": null, "profile_image_bytes": [], "id": "AMjpKhlvWYfXbPAYqmb6", "date_joined": "2023-01-21T18:25:34.369762", "is_tailor": true, "email": "z1@gmail.com"}'),
-      );
-      print(data!.toJson());
-    });
+    initialImageUrl = 'assets/user.png';
+    customer = widget.customerData;
     phoneNoController.addListener(() {
       if (mounted) {
         setState(() {});
@@ -102,16 +111,8 @@ class _TailorRegitrationState extends State<TailorRegistration> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return LoadingOverlay(
-      progressIndicator: SpinKitDoubleBounce(
-        itemBuilder: (BuildContext context, int index) {
-          return DecoratedBox(
-            decoration: BoxDecoration(
-              color: index.isEven ? Colors.blue : Colors.white,
-            ),
-          );
-        },
-      ),
-      isLoading: isVerifyingPhoneNumber,
+      progressIndicator: buildLoadingSpinner(),
+      isLoading: isVerifyingPhoneNumber || isSavingDataInFirebase,
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
@@ -119,7 +120,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
             style: kInputStyle,
           ),
           centerTitle: true,
-          actions: [buildClearFormButton(context)],
+          actions: [if (phoneNumberVerified) buildClearFormButton(context)],
         ),
         body: Padding(
           padding: EdgeInsets.symmetric(
@@ -137,105 +138,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                     if (phoneNumberVerified && tailor == null)
                       buildPersonalInfoColumn(size, context),
                     if (phoneNumberVerified && tailor != null)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          SizedBox(height: size.height * 0.01),
-                          Text(
-                            'Shop Info.',
-                            style: kTitleStyle.copyWith(fontSize: 35),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: size.height * 0.02),
-                          buildTextFormField(
-                            'website url(optional)',
-                            websiteUrlController,
-                            FontAwesomeIcons.globe,
-                            null,
-                            keyboard: TextInputType.url,
-                          ),
-                          buildTextFormField(
-                            'shop name',
-                            shopNameController,
-                            FontAwesomeIcons.shop,
-                            'enter shop name',
-                            keyboard: TextInputType.name,
-                          ),
-                          buildTextFormField(
-                            'address',
-                            shopAddressController,
-                            FontAwesomeIcons.locationDot,
-                            'enter shop address',
-                            keyboard: TextInputType.streetAddress,
-                          ),
-                          buildTextFormField(
-                            'city',
-                            cityController,
-                            FontAwesomeIcons.city,
-                            'enter city name',
-                          ),
-                          buildTextFormField(
-                            'postal code',
-                            postalCodeController,
-                            Icons.code,
-                            'enter postal code',
-                            keyboard: TextInputType.number,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: SizedBox(
-                              height: size.height * 0.25,
-                              child: Column(
-                                children: [
-                                  Text(
-                                    'Shop Logo',
-                                    style: kInputStyle.copyWith(fontSize: 18),
-                                  ),
-                                  SizedBox(height: size.height * 0.01),
-                                  Expanded(
-                                    child: Container(
-                                      width: size.width * 0.4,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(20),
-                                        image: DecorationImage(
-                                          image: MemoryImage(logoImageBytes ??
-                                              initialImageBytes!),
-                                          fit: BoxFit.contain,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  RectangularRoundedButton(
-                                    padding: EdgeInsets.zero,
-                                    fontSize: 15,
-                                    buttonName: 'Upload',
-                                    onPressed: () {},
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: size.height * 0.02),
-                          RectangularRoundedButton(
-                            buttonName: 'Register',
-                            onPressed: () async {
-                              if (formKey.currentState!.validate()) {
-                                Shop shop = Shop(
-                                    websiteUrl:
-                                        websiteUrlController.text.trim(),
-                                    address: shopAddressController.text.trim(),
-                                    city: cityController.text.trim(),
-                                    name: shopNameController.text.trim(),
-                                    postalCode: int.parse(
-                                        postalCodeController.text.trim()));
-                                tailor!.shop = shop;
-                                setState(() {});
-                                print('Tailor data: ${tailor!.toJson()}');
-                              }
-                            },
-                          ),
-                        ],
-                      ),
+                      buildShopInfoColumn(size),
                   ],
                 ),
               ),
@@ -246,22 +149,321 @@ class _TailorRegitrationState extends State<TailorRegistration> {
     );
   }
 
+  SpinKitDoubleBounce buildLoadingSpinner() {
+    return SpinKitDoubleBounce(
+      itemBuilder: (BuildContext context, int index) {
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            color: index.isEven ? Colors.blue : Colors.white,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget buildShopInfoColumn(Size size) {
+    return Form(
+      key: shopFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(height: size.height * 0.01),
+          Text(
+            'Shop Info.',
+            style: kTitleStyle.copyWith(fontSize: 35),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: size.height * 0.02),
+          buildTextFormField(
+            'website url(optional)',
+            websiteUrlController,
+            FontAwesomeIcons.globe,
+            null,
+            keyboard: TextInputType.url,
+          ),
+          buildTextFormField(
+            'shop name',
+            shopNameController,
+            FontAwesomeIcons.shop,
+            'enter shop name',
+            keyboard: TextInputType.name,
+          ),
+          buildTextFormField(
+            'address',
+            shopAddressController,
+            FontAwesomeIcons.locationDot,
+            'enter shop address',
+            keyboard: TextInputType.streetAddress,
+          ),
+          buildTextFormField(
+            'city',
+            cityController,
+            FontAwesomeIcons.city,
+            'enter city name',
+          ),
+          buildTextFormField(
+            'postal code',
+            postalCodeController,
+            Icons.code,
+            'enter postal code',
+            keyboard: TextInputType.number,
+          ),
+          buildShopLogoContainer(size),
+          buildShopImagesContainer(size),
+          SizedBox(height: size.height * 0.02),
+          buildRegisterButton(),
+        ],
+      ),
+    );
+  }
+
+  RectangularRoundedButton buildRegisterButton() {
+    return RectangularRoundedButton(
+      buttonName: 'Register',
+      onPressed: () async {
+        bool taskSuccessful = false;
+        setState(() {
+          isRegisterBtnPressed = true;
+          isSavingDataInFirebase = true;
+        });
+        //62 seconds as timeout
+        Future.delayed(Duration(seconds: 60, milliseconds: 2000)).then((value) {
+          if (mounted) {
+            setState(() => isSavingDataInFirebase = false);
+            if (!taskSuccessful) showMyBanner(context, 'Timed out.');
+          }
+        });
+        if (formKey.currentState!.validate() &&
+            shopFormKey.currentState!.validate() &&
+            shopImagesList.length == 2 &&
+            logoImageUrl != null) {
+          Shop shop = Shop(
+            websiteUrl: websiteUrlController.text.trim(),
+            address: shopAddressController.text.trim(),
+            city: capitalizeText(cityController.text.trim()),
+            name: capitalizeText(shopNameController.text.trim()),
+            postalCode: int.parse(postalCodeController.text.trim()),
+            shopImage1Url: shopImagesList[0],
+            shopImage2Url: shopImagesList[1],
+            logoImageUrl: logoImageUrl!,
+          );
+          tailor!.shop = shop;
+          try {
+            await FirebaseFirestore.instance
+                .collection('tailors')
+                .add(tailor!.toJson())
+                .then((doc) {
+              tailor!.id = doc.id;
+              doc.update(tailor!.toJson()).then((value) {
+                customer!.isRegisteredTailor = true;
+                if (mounted) {
+                  setState(() {
+                    taskSuccessful = true;
+                  });
+                }
+                tailor!.id = doc.id;
+                doc.update(tailor!.toJson()).then((value) {
+                  customer!.isRegisteredTailor = true;
+                  FirebaseFirestore.instance
+                      .collection('customers')
+                      .doc(customer!.id)
+                      .update(customer!.toJson());
+                  print("Customer Data updated");
+                }).then((value) {
+                  if (taskSuccessful) {
+                    if (widget.fromScreen == Login.id) {
+                      Navigator.pushReplacementNamed(context, Home.id,
+                          arguments: {'tailorRegisteredRecently': true});
+                    } else {
+                      //1 inidicates it was a tailor registration & was successful
+                      FirebaseAuth.instance.signOut().then((value) =>
+                          SharedPreferences.getInstance().then((pref) =>
+                              pref.setBool(Login.isLoggedInText, false)));
+                      showMyDialog(context, 'Success',
+                              'Tailor registration successful.',
+                              isError: false, disposeAfterMillis: 1200)
+                          .then((value) => Navigator.pop(context, 1));
+                    }
+                  }
+                });
+              });
+            });
+          } catch (e) {
+            print('Exception while saving: $e');
+          }
+          onClearButtonPressed();
+          print('Tailor data: ${tailor!.toJson().toString()}');
+          setState(() {
+            isRegisterBtnPressed = false;
+            isSavingDataInFirebase = false;
+          });
+        }
+      },
+    );
+  }
+
+  Padding buildShopImagesContainer(Size size) {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                'Shop images',
+                style: kInputStyle.copyWith(
+                  fontSize: 18,
+                ),
+              ),
+              if (shopImagesList.isNotEmpty)
+                Text(
+                  "(${shopImagesList.length}/2)",
+                  style: kInputStyle.copyWith(
+                    fontSize: 15,
+                  ),
+                ),
+              if (shopImagesList.length < 2 && isRegisterBtnPressed)
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Text('(Add at least 2 images)',
+                        style: kTextStyle.copyWith(
+                            color: Colors.red, fontSize: 12)),
+                  ),
+                )
+            ],
+          ),
+          SizedBox(height: size.height * 0.02),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              //shop image 1 container(while he hasn't uploaded any image)
+              shopImagesList.isNotEmpty
+                  ? buildImageItem(size, shopImagesList[0], onRemove: () {
+                      shopImagesList.removeWhere(
+                          (element) => element == shopImagesList[0]);
+                      setState(() {});
+                    })
+                  : buildUploadShopImageContainer(size, 1),
+              shopImagesList.length > 1
+                  ? buildImageItem(size, shopImagesList[1], onRemove: () {
+                      shopImagesList.removeWhere(
+                          (element) => element == shopImagesList[1]);
+                      setState(() {});
+                    })
+                  : buildUploadShopImageContainer(size, 2),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Padding buildShopLogoContainer(Size size) {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: SizedBox(
+        height: size.height * 0.22,
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  'Shop Logo',
+                  style: kInputStyle.copyWith(
+                    fontSize: 18,
+                  ),
+                ),
+                if (logoImageUrl == null && isRegisterBtnPressed)
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: Text('(Add your shop\'s logo)',
+                          style: kTextStyle.copyWith(
+                              color: Colors.red, fontSize: 12)),
+                    ),
+                  )
+              ],
+            ),
+            SizedBox(height: size.height * 0.01),
+            Expanded(
+              child: logoImageUrl == null
+                  ? buildUploadImageContainer(
+                      size,
+                      isUploadingLogo,
+                      onPressed: () async {
+                        final file =
+                            await picker.pickImage(source: ImageSource.gallery);
+                        if (file != null) {
+                          setState(() {
+                            isUploadingLogo = true;
+                          });
+
+                          final storageRef =
+                              storage.child('${customer!.email}/logoUrl.png');
+                          final uploadTask =
+                              await storageRef.putFile(File(file.path));
+                          final downloadUrl =
+                              await uploadTask.ref.getDownloadURL();
+                          setState(() {
+                            logoImageUrl = downloadUrl;
+                            isUploadingLogo = false;
+                          });
+                        }
+                      },
+                    )
+                  : buildImageItem(size, logoImageUrl, onRemove: () {
+                      logoImageUrl = null;
+                      setState(() {});
+                    }),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildImageItem(size, String? url, {required VoidCallback onRemove}) =>
+      Container(
+          width: size.width * 0.4,
+          height: size.width * 0.38,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            image: DecorationImage(
+              image: (url == null
+                  ? const AssetImage('assets/user.png')
+                  : NetworkImage(url) as ImageProvider),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Align(
+            alignment: Alignment.topRight,
+            child: Padding(
+              padding: const EdgeInsets.all(5),
+              child: InkWell(
+                onTap: onRemove,
+                child: CircleAvatar(
+                  radius: 12,
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.clear,
+                    color: Colors.red,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+          ));
+
   TextButton buildClearFormButton(BuildContext context) {
     return TextButton(
-      onPressed: () {
-        setState(() {
-          isNextBtnPressed = false;
-          stitchingType = null;
-          gender = null;
-          experienceController.clear();
-          profileImageBytes = initialImageBytes;
-          customizesDresses = false;
-          selectedExpertise.clear();
-          unSelectedExpertise.clear();
-
-          formKey.currentState?.reset();
-        });
-        showMyBanner(context, "Form cleared successfully.");
+      onPressed: () => {
+        onClearButtonPressed(),
+        showMyBanner(context, "Form cleared successfully.")
       },
       child: Text(
         'Clear',
@@ -280,8 +482,8 @@ class _TailorRegitrationState extends State<TailorRegistration> {
           style: kTitleStyle.copyWith(fontSize: 35),
           textAlign: TextAlign.center,
         ),
-        buildProfilePicture(size),
-        buildSelectImageButton(size),
+        Align(alignment: Alignment.center, child: buildProfilePicture(size)),
+        buildSelectProfileImageButton(size),
         SizedBox(height: size.height * 0.01),
         buildGenderRow(),
         SizedBox(height: size.height * 0.01),
@@ -299,20 +501,27 @@ class _TailorRegitrationState extends State<TailorRegistration> {
     );
   }
 
-  CircleAvatar buildProfilePicture(Size size) {
+  Widget buildProfilePicture(Size size) {
     return CircleAvatar(
       radius: size.width * 0.25,
       backgroundColor: Colors.blue,
-      child: CircleAvatar(
-        radius: size.width * 0.247,
-        backgroundColor: Colors.white,
-        backgroundImage:
-            profileImageBytes == null ? null : MemoryImage(profileImageBytes!),
+      child: Center(
+        child: CircleAvatar(
+          radius: size.width * 0.247,
+          backgroundColor:
+              isUploadingProfileImage ? Colors.white54 : Colors.white,
+          backgroundImage: (profileImageUrl != null
+              ? NetworkImage(profileImageUrl!)
+              : AssetImage(initialImageUrl!) as ImageProvider),
+          child: isUploadingProfileImage
+              ? Center(child: buildLoadingSpinner())
+              : null,
+        ),
       ),
     );
   }
 
-  Container buildSelectImageButton(Size size) {
+  Container buildSelectProfileImageButton(Size size) {
     return Container(
       margin: EdgeInsets.symmetric(
           horizontal: size.width * 0.25, vertical: size.height * 0.002),
@@ -320,13 +529,34 @@ class _TailorRegitrationState extends State<TailorRegistration> {
         padding: EdgeInsets.zero,
         fontSize: 15,
         buttonName: 'Select',
-        onPressed: () async {
-          final file = await picker.pickImage(source: ImageSource.gallery);
-          if (file != null) {
-            profileImageBytes = await file.readAsBytes();
-            setState(() {});
-          }
-        },
+        onPressed: isUploadingProfileImage
+            ? null
+            : () async {
+                bool taskSuccessful = false;
+                final file =
+                    await picker.pickImage(source: ImageSource.gallery);
+                if (file != null) {
+                  setState(() {
+                    isUploadingProfileImage = true;
+                  });
+                  Future.delayed(
+                    const Duration(seconds: 30),
+                  ).then((value) => setState(() {
+                        isUploadingProfileImage = false;
+                        if (!taskSuccessful)
+                          showMyBanner(context, 'Timed out.');
+                      }));
+                  final storageRef =
+                      storage.child('${customer!.email}/profileImage.png');
+                  final uploadTask = await storageRef.putFile(File(file.path));
+                  final downloadUrl = await uploadTask.ref.getDownloadURL();
+                  setState(() {
+                    profileImageUrl = downloadUrl;
+                    taskSuccessful = true;
+                    isUploadingProfileImage = false;
+                  });
+                }
+              },
       ),
     );
   }
@@ -417,14 +647,15 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               selectedExpertise.isNotEmpty) {
             print("Validation successful");
             tailor = Tailor(
-              tailorName: customer!.name,
+              tailorName: capitalizeText(customer!.name),
               email: customer!.email,
               gender: gender!,
               stitchingType: stitchingType!,
               expertise: selectedExpertise,
               phoneNumber: countryCode + phoneNoController.text,
-              profileImageBytes: profileImageBytes!.toList(),
+              profileImageUrl: profileImageUrl,
               customizes: customizesDresses,
+              customerDocId: customer!.id,
               experience: int.parse(experienceController.text.trim()),
             );
 
@@ -521,8 +752,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                 StitchingType.values.length,
                 (index) => DropdownMenuItem(
                   value: StitchingType.values[index],
-                  child: Text(
-                      capitalizeMenuItem(StitchingType.values[index].name)),
+                  child: Text(capitalizeText(StitchingType.values[index].name)),
                 ),
               ),
               onChanged: (item) {
@@ -587,7 +817,12 @@ class _TailorRegitrationState extends State<TailorRegistration> {
         padding: const EdgeInsets.symmetric(vertical: 2),
         onPressed: phoneNoController.text.trim().length != 10
             ? null
-            : sendCodeToNumber,
+            : () => {
+                  setState(() {
+                    isVerifyingPhoneNumber = true;
+                  }),
+                  sendCodeToNumber()
+                },
       ),
     );
   }
@@ -641,9 +876,6 @@ class _TailorRegitrationState extends State<TailorRegistration> {
   }
 
   void sendCodeToNumber() async {
-    setState(() {
-      isVerifyingPhoneNumber = true;
-    });
     final overallContext = context;
     final pincodeController = TextEditingController();
     final phoneNumber = countryCode + phoneNoController.text;
@@ -668,70 +900,78 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               vertical: MediaQuery.of(context).size.height * 0.26,
               horizontal: MediaQuery.of(context).size.width * 0.05,
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Enter pin code sent to ${countryCode + phoneNoController.text}',
-                    style: kInputStyle.copyWith(fontSize: 20, height: 1.5),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.07,
-                  ),
-                  FittedBox(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Center(
-                        child: PinCodeTextField(
-                          autofocus: true,
-                          controller: pincodeController,
-                          maxLength: 6,
-                          pinTextStyle: kInputStyle,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(15.0),
+              child: LoadingOverlay(
+                isLoading: isVerifyingPhoneNumber,
+                progressIndicator: buildLoadingSpinner(),
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Enter pin code sent to ${countryCode + phoneNoController.text}',
+                        style: kInputStyle.copyWith(fontSize: 20, height: 1.5),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.07,
+                      ),
+                      FittedBox(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Center(
+                            child: PinCodeTextField(
+                              autofocus: true,
+                              controller: pincodeController,
+                              maxLength: 6,
+                              pinTextStyle: kInputStyle,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.05,
-                  ),
-                  RectangularRoundedButton(
-                    buttonName: 'Submit',
-                    onPressed: () async {
-                      if (pincodeController.text.isNotEmpty) {
-                        try {
-                          await FirebaseAuth.instance.currentUser!
-                              .linkWithCredential(
-                            PhoneAuthProvider.credential(
-                              verificationId: verId,
-                              smsCode: pincodeController.text.trim(),
-                            ),
-                          );
-                          showMyBanner(
-                              overallContext, 'Verification successful.');
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.05,
+                      ),
+                      RectangularRoundedButton(
+                        buttonName: 'Submit',
+                        onPressed: () async {
+                          if (pincodeController.text.isNotEmpty) {
+                            try {
+                              await FirebaseAuth.instance.currentUser!
+                                  .linkWithCredential(
+                                PhoneAuthProvider.credential(
+                                  verificationId: verId,
+                                  smsCode: pincodeController.text.trim(),
+                                ),
+                              );
+                              showMyBanner(
+                                  overallContext, 'Verification successful.');
+                              setState(() {
+                                phoneNumberVerified = true;
+                              });
+                              Future.delayed(const Duration(milliseconds: 10))
+                                  .then((value) => Navigator.pop(context));
+                            } on FirebaseAuthException catch (e) {
+                              print('Exception : ${e.code}');
+                              showMyBanner(overallContext, 'Error: ${e.code}');
+                            } catch (e) {
+                              print(
+                                  'Exception other than firebase auth in otp: $e');
+                              showMyBanner(
+                                  overallContext, 'Verification failed.');
+                            }
+                          }
                           setState(() {
-                            phoneNumberVerified = true;
+                            isVerifyingPhoneNumber = false;
                           });
-                          Future.delayed(const Duration(milliseconds: 10))
-                              .then((value) => Navigator.pop(context));
-                        } on FirebaseAuthException catch (e) {
-                          print('Exception : ${e.code}');
-                          showMyBanner(overallContext, 'Error: ${e.code}');
-                        } catch (e) {
-                          print(
-                              'Exception other than firebase auth in otp: $e');
-                          showMyBanner(overallContext, 'Verification failed.');
-                        }
-                      }
-                      setState(() {
-                        isVerifyingPhoneNumber = false;
-                      });
-                    },
+                        },
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -748,7 +988,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
     }
   }
 
-  String capitalizeMenuItem(String text) {
+  String capitalizeText(String text) {
     return text[0].toUpperCase() + text.substring(1);
   }
 
@@ -862,4 +1102,110 @@ class _TailorRegitrationState extends State<TailorRegistration> {
     );
     setState(() {});
   }
+
+  buildUploadImageContainer(size, bool isUploading,
+          {required VoidCallback onPressed, String text = 'Upload'}) =>
+      Container(
+          width: size.width * 0.4,
+          height: size.width * 0.38,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                  blurRadius: 2, offset: Offset(1, 1), color: Colors.grey),
+            ],
+          ),
+          child: isUploading
+              ? Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: LoadingOverlay(
+                        isLoading: true,
+                        progressIndicator: buildLoadingSpinner(),
+                        child: Text('')),
+                  ),
+                )
+              : IconButton(
+                  icon: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(FontAwesomeIcons.upload,
+                          color: Colors.grey.shade600),
+                      Text(text, style: kTextStyle.copyWith(fontSize: 18))
+                    ],
+                  ),
+                  onPressed: onPressed,
+                ));
+
+  void onClearButtonPressed() {
+    setState(() {
+      isNextBtnPressed = false;
+      stitchingType = null;
+      gender = null;
+      profileImageUrl = initialImageUrl;
+      websiteUrlController.clear();
+      shopNameController.clear();
+      experienceController.clear();
+      postalCodeController.clear();
+      cityController.clear();
+      shopAddressController.clear();
+      customizesDresses = false;
+      selectedExpertise.clear();
+      unSelectedExpertise.clear();
+      logoImageUrl = null;
+      shopImagesList.clear();
+      formKey.currentState?.reset();
+    });
+  }
+
+  buildUploadShopImageContainer(size, int imageNo) => buildUploadImageContainer(
+        size,
+        imageNo == 1 ? isUploadingShop1Image : isUploadingShop2Image,
+        onPressed: () async {
+          if (shopImagesList.length < 2) {
+            final file = await picker.pickImage(source: ImageSource.gallery);
+            if (file != null) {
+              setState(() {
+                if (imageNo == 1) {
+                  isUploadingShop1Image = true;
+                } else {
+                  isUploadingShop2Image = true;
+                }
+              });
+
+              final storageRef =
+                  storage.child('${customer!.email}/shopImage$imageNo.png');
+              final uploadTask = await storageRef.putFile(File(file.path));
+              final downloadUrl = await uploadTask.ref.getDownloadURL();
+              setState(() {
+                shopImagesList.add(downloadUrl);
+                if (imageNo == 1) {
+                  isUploadingShop1Image = false;
+                } else {
+                  isUploadingShop2Image = false;
+                }
+              });
+            }
+          }
+        },
+      );
 }
+
+// TextButton buildUploadImageButton(VoidCallback onPressed,
+//     [String text = 'Upload']) {
+//   return TextButton(
+//     style: TextButton.styleFrom(
+//       padding: EdgeInsets.zero,
+//     ),
+//     onPressed: onPressed,
+//     child: Text(
+//       text,
+//       style: kTextStyle.copyWith(
+//           fontSize: 18,
+//           color: Colors.blue,
+//           decoration: TextDecoration.underline),
+//     ),
+//   );
+// }

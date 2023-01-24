@@ -43,13 +43,12 @@ class DressSewApp extends StatelessWidget {
           ? Login()
           : customer != null && customer!.isRegisteredTailor
               ? Home()
-              : TailorRegistration(),
+              : TailorRegistration(customerData: customer!),
       routes: {
         Home.id: ((context) => Home()),
         Login.id: ((context) => Login()),
         SignUp.id: ((context) => SignUp()),
         ForgotPassword.id: ((context) => ForgotPassword()),
-        TailorRegistration.id: ((context) => TailorRegistration()),
       },
     );
   }

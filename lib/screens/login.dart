@@ -93,7 +93,7 @@ class _LoginState extends State<Login> {
                         style: kInputStyle,
                         controller: emailController,
                         onChanged: (value) {
-                          email = value.trim() ?? '';
+                          email = value.trim();
                         },
                         validator: (val) {
                           if (val == null || val.isEmpty) {
@@ -193,8 +193,13 @@ class _LoginState extends State<Login> {
                               print("Customer loaded: ${customer.toJson()}");
                               if (customer.isTailor) {
                                 if (!customer.isRegisteredTailor) {
-                                  await Navigator.pushReplacementNamed(
-                                      context, TailorRegistration.id);
+                                  await Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            TailorRegistration(
+                                                customerData: customer)),
+                                  );
                                 } else {
                                   Navigator.pushReplacementNamed(
                                       context, Home.id);
@@ -202,11 +207,6 @@ class _LoginState extends State<Login> {
                               } else {
                                 //navigate to customer app view
                               }
-                              await Navigator.pushReplacementNamed(
-                                  context, Home.id);
-                              showMyDialog(
-                                  context, 'Info.', 'Logout successful',
-                                  isError: false);
                             } on FirebaseAuthException catch (e) {
                               if (e.code == "user-not-found") {
                                 showMyDialog(context, 'Login Error!',
@@ -249,9 +249,16 @@ class _LoginState extends State<Login> {
                                 fontWeight: FontWeight.w500),
                           ),
                           TextButton(
-                            onPressed: () {
+                            onPressed: () async {
                               clearText();
-                              Navigator.pushNamed(context, SignUp.id);
+                              final tailorRegistered =
+                                  await Navigator.pushNamed(context, SignUp.id);
+                              if (tailorRegistered != null &&
+                                  tailorRegistered == 1) {
+                                // ignore: use_build_context_synchronously
+                                showMyBanner(
+                                    context, 'Tailor registered successfully.');
+                              }
                             },
                             child: Text(
                               'Create an Account',
