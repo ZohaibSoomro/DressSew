@@ -25,6 +25,15 @@ dependencies:
   pin_code_text_field: ^1.8.0
   image_picker: ^0.8.6+1
   firebase_storage: ^11.0.10
+  flutter_native_splash: ^2.2.17
+  # flutter_native_splash-development.yaml
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/logo.png
+  color_dark: "#ffffff"
+  android_12:
+    icon_background_color: "#ffffff"
+    icon_background_color_dark: "#ffffff"
 
 dev_dependencies:
   flutter_test:
