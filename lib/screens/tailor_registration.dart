@@ -227,17 +227,21 @@ class _TailorRegitrationState extends State<TailorRegistration> {
       buttonName: 'Register',
       onPressed: () async {
         bool taskSuccessful = false;
-        setState(() {
-          isRegisterBtnPressed = true;
-        });
+        if (mounted) {
+          setState(() {
+            isRegisterBtnPressed = true;
+          });
+        }
         if (formKey.currentState!.validate() &&
             shopFormKey.currentState!.validate() &&
             shopImagesList.length == 2 &&
             logoImageUrl != null) {
-          setState(() {
-            isRegisterBtnPressed = true;
-            isSavingDataInFirebase = true;
-          });
+          if (mounted) {
+            setState(() {
+              isRegisterBtnPressed = true;
+              isSavingDataInFirebase = true;
+            });
+          }
           //62 seconds as timeout
           Future.delayed(Duration(seconds: 60, milliseconds: 2000))
               .then((value) {
@@ -263,41 +267,50 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                 .add(tailor!.toJson())
                 .then((doc) {
               tailor!.id = doc.id;
+              tailor!.userDocId = widget.userData.id;
               FirebaseAuth.instance.currentUser!
                   .updateDisplayName(widget.userData.name)
                   .then((value) => print('Display name updated.'));
               doc.update(tailor!.toJson()).then((value) {
                 widget.userData.isRegistered = true;
+                widget.userData.isTailor = true;
+                widget.userData.customerOrTailorId = doc.id;
                 if (mounted) {
                   setState(() {
                     taskSuccessful = true;
                   });
                 }
-                tailor!.id = doc.id;
-                doc.update(tailor!.toJson()).then((value) {
-                  widget.userData.isRegistered = true;
-                  FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(widget.userData.id)
-                      .update(widget.userData.toJson());
-                  print("Customer Data updated");
-                }).then((value) {
-                  if (taskSuccessful) {
-                    if (widget.fromScreen == Login.id) {
-                      Navigator.pushReplacementNamed(context, Home.id,
-                          arguments: {'tailorRegisteredRecently': true});
-                    } else {
-                      //1 inidicates it was a tailor registration & was successful
-                      FirebaseAuth.instance.signOut().then((value) =>
-                          SharedPreferences.getInstance().then((pref) =>
-                              pref.setBool(Login.isLoggedInText, false)));
+                FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(widget.userData.id)
+                    .update(widget.userData.toJson());
+                print("tailor's user Data updated");
+              }).then((value) {
+                if (taskSuccessful) {
+                  if (widget.fromScreen == Login.id) {
+                    Navigator.pushReplacementNamed(context, Home.id);
+                  } else {
+                    //1 inidicates it was a tailor registration & was successful
+
+                    FirebaseAuth.instance
+                        .signOut()
+                        .then((value) => SharedPreferences.getInstance().then(
+                            (pref) =>
+                                pref.setBool(Login.isLoggedInText, false)))
+                        .then((value) {
+                      if (mounted) {
+                        setState(() {
+                          isRegisterBtnPressed = false;
+                          isSavingDataInFirebase = false;
+                        });
+                      }
                       showMyDialog(context, 'Success',
                               'Tailor registration successful.',
                               isError: false, disposeAfterMillis: 1200)
                           .then((value) => Navigator.pop(context, 1));
-                    }
+                    });
                   }
-                });
+                }
               });
             });
           } catch (e) {
@@ -305,10 +318,6 @@ class _TailorRegitrationState extends State<TailorRegistration> {
           }
           onClearButtonPressed();
           print('Tailor data: ${tailor!.toJson().toString()}');
-          setState(() {
-            isRegisterBtnPressed = false;
-            isSavingDataInFirebase = false;
-          });
         }
       },
     );
@@ -671,7 +680,6 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               phoneNumber: countryCode + phoneNoController.text,
               profileImageUrl: profileImageUrl,
               customizes: customizesDresses,
-              customerDocId: widget.userData.id,
               rates: expertiseRatesList,
               experience: int.parse(experienceController.text.trim()),
             );
@@ -1093,7 +1101,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                             onTap: () {
                               selectedExpertise.add(unSelectedExpertise[index]);
                               ratesFieldsController
-                                  .add(TextEditingController());
+                                  .add(TextEditingController(text: '0'));
                               expertiseRatesList.add(Rates(
                                   category: unSelectedExpertise[index],
                                   price: 0));

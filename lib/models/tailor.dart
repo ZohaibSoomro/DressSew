@@ -15,7 +15,6 @@ class Tailor {
   int? experience;
   bool? customizes;
   String? onTimeDelivery;
-  String? customerDocId;
   double? rating;
   List<OrdersPlaced> orders;
 
@@ -25,7 +24,6 @@ class Tailor {
     required this.tailorName,
     this.phoneNumber,
     this.shop,
-    this.customerDocId,
     required this.email,
     this.experience,
     this.customizes,
@@ -42,7 +40,6 @@ class Tailor {
   static Tailor fromJson(Map<String, dynamic> json) => Tailor(
       id: json['id'],
       userDocId: json['user_doc_id'],
-      customerDocId: json['customer_doc_id'],
       tailorName: json['tailor_name'],
       phoneNumber: json['phone_number'],
       shop: Shop.fromJson(json['shop']),
@@ -62,7 +59,6 @@ class Tailor {
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'customer_doc_id': customerDocId,
         'tailor_name': tailorName,
         'user_doc_id': userDocId,
         'phone_number': phoneNumber,

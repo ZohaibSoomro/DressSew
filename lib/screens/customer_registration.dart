@@ -176,6 +176,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                 .add(customer!.toJson())
                 .then((doc) {
               customer!.id = doc.id;
+              customer!.userDocId = widget.userData.id;
               //update display user name
               FirebaseAuth.instance.currentUser!
                   .updateDisplayName(widget.userData.name)
@@ -196,7 +197,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                       .collection('users')
                       .doc(widget.userData.id)
                       .update(widget.userData.toJson());
-                  print("App user Data updated");
+                  print("customer's user Data updated");
                 }).then((value) {
                   if (taskSuccessful) {
                     if (widget.fromScreen == Login.id) {
