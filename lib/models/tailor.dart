@@ -127,6 +127,11 @@ class Rates {
         'category': category,
         'price': price,
       };
+
+  @override
+  String toString() {
+    return toJson().values.toString();
+  }
 }
 
 enum StitchingType {

@@ -27,10 +27,8 @@ const kTextFieldDecoration = InputDecoration(
 
 const ladiesExpertise = [
   "Blouse",
-  "Shirts",
   "Sweater",
-  "Trousers",
-  "Skirt",
+  "Trouser Shirt",
   "Gowns",
   "Cultural outfit",
   "Churidar",
@@ -42,7 +40,7 @@ const menExpertise = [
   "Suits",
   "Uniforms",
   "Cultural outfit",
-  "Trousers",
+  "Trouser Shirt",
   "Coats",
   "WaistCoat",
   "Shalwar Kameez",

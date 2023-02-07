@@ -5,6 +5,7 @@ import 'package:dresssew/main.dart';
 import 'package:dresssew/models/customer.dart';
 import 'package:dresssew/models/shop.dart';
 import 'package:dresssew/utilities/constants.dart';
+import 'package:dresssew/utilities/item_rate_input_tile.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
 import 'package:dresssew/utilities/rectangular_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -64,9 +65,11 @@ class _TailorRegitrationState extends State<TailorRegistration> {
   String? initialImageUrl;
   StitchingType? stitchingType;
   List<String> selectedExpertise = [];
+  List<Rates> expertiseRatesList = [];
   List<String> unSelectedExpertise = [];
 
   final experienceController = TextEditingController();
+  List<TextEditingController> ratesFieldsController = [];
   bool customizesDresses = false;
   Tailor? tailor;
 
@@ -105,6 +108,9 @@ class _TailorRegitrationState extends State<TailorRegistration> {
     shopNameController.dispose();
     cityController.dispose();
     postalCodeController.dispose();
+    ratesFieldsController.forEach((element) {
+      element.dispose();
+    });
   }
 
   @override
@@ -224,19 +230,23 @@ class _TailorRegitrationState extends State<TailorRegistration> {
         bool taskSuccessful = false;
         setState(() {
           isRegisterBtnPressed = true;
-          isSavingDataInFirebase = true;
-        });
-        //62 seconds as timeout
-        Future.delayed(Duration(seconds: 60, milliseconds: 2000)).then((value) {
-          if (mounted) {
-            setState(() => isSavingDataInFirebase = false);
-            if (!taskSuccessful) showMyBanner(context, 'Timed out.');
-          }
         });
         if (formKey.currentState!.validate() &&
             shopFormKey.currentState!.validate() &&
             shopImagesList.length == 2 &&
             logoImageUrl != null) {
+          setState(() {
+            isRegisterBtnPressed = true;
+            isSavingDataInFirebase = true;
+          });
+          //62 seconds as timeout
+          Future.delayed(Duration(seconds: 60, milliseconds: 2000))
+              .then((value) {
+            if (mounted) {
+              setState(() => isSavingDataInFirebase = false);
+              if (!taskSuccessful) showMyBanner(context, 'Timed out.');
+            }
+          });
           Shop shop = Shop(
             websiteUrl: websiteUrlController.text.trim(),
             address: shopAddressController.text.trim(),
@@ -510,9 +520,10 @@ class _TailorRegitrationState extends State<TailorRegistration> {
           radius: size.width * 0.247,
           backgroundColor:
               isUploadingProfileImage ? Colors.white54 : Colors.white,
-          backgroundImage: (profileImageUrl != null
-              ? NetworkImage(profileImageUrl!)
-              : AssetImage(initialImageUrl!) as ImageProvider),
+          backgroundImage:
+              (profileImageUrl != null && profileImageUrl != initialImageUrl
+                  ? NetworkImage(profileImageUrl!)
+                  : AssetImage(initialImageUrl!) as ImageProvider),
           child: isUploadingProfileImage
               ? Center(child: buildLoadingSpinner())
               : null,
@@ -601,7 +612,8 @@ class _TailorRegitrationState extends State<TailorRegistration> {
         children: [
           buildAddExpertiseRow(context),
           SizedBox(height: size.height * 0.005),
-          buildExpertiseWrappedList(size),
+          buildExpertiseRatesTextFields(size),
+          // buildExpertiseWrappedList(size),
         ],
       ),
     );
@@ -656,9 +668,10 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               profileImageUrl: profileImageUrl,
               customizes: customizesDresses,
               customerDocId: customer!.id,
+              rates: expertiseRatesList,
               experience: int.parse(experienceController.text.trim()),
             );
-
+            print("Rates: $expertiseRatesList");
             isNextBtnPressed = false;
           }
         });
@@ -763,6 +776,9 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                       : stitchingType == StitchingType.ladies
                           ? List.from(ladiesExpertise)
                           : List.from(overallExpertise);
+                  selectedExpertise.clear();
+                  ratesFieldsController.clear();
+                  expertiseRatesList.clear();
                 });
               },
             ),
@@ -1044,6 +1060,9 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                               unSelectedExpertise.add(selectedExpertise[index]);
                               unSelectedExpertise.sort();
                               setState(() {});
+                              expertiseRatesList.removeWhere((e) =>
+                                  e.category == selectedExpertise[index]);
+                              ratesFieldsController.removeAt(index);
                               selectedExpertise.removeAt(index);
                               setState(() {});
                             },
@@ -1069,7 +1088,15 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                             ),
                             onTap: () {
                               selectedExpertise.add(unSelectedExpertise[index]);
-                              selectedExpertise.sort();
+                              ratesFieldsController
+                                  .add(TextEditingController());
+                              expertiseRatesList.add(Rates(
+                                  category: unSelectedExpertise[index],
+                                  price: 0));
+                              // expertiseRatesList.sort((n1, n2) {
+                              //   return n1.category.compareTo(n2.category);
+                              // });
+                              // selectedExpertise.sort();
                               unSelectedExpertise.removeAt(index);
                               setState(() {});
                             },
@@ -1191,6 +1218,25 @@ class _TailorRegitrationState extends State<TailorRegistration> {
           }
         },
       );
+
+  Widget buildExpertiseRatesTextFields(Size size) {
+    return Column(
+        children: List.generate(
+      selectedExpertise.length,
+      (index) {
+        return ItemRateInputTile(
+            title: selectedExpertise[index],
+            controller: ratesFieldsController[index],
+            onChanged: (val) {
+              setState(() {
+                if (val != null && val.isNotEmpty) {
+                  expertiseRatesList[index].price = int.parse(val);
+                }
+              });
+            });
+      },
+    ));
+  }
 }
 
 // TextButton buildUploadImageButton(VoidCallback onPressed,
