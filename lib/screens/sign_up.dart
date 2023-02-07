@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dresssew/models/customer.dart';
+import 'package:dresssew/models/app_user.dart';
+import 'package:dresssew/screens/customer_registration.dart';
 import 'package:dresssew/screens/tailor_registration.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
@@ -93,7 +94,6 @@ class _SignUpState extends State<SignUp> {
                         height: size.height * 0.07,
                       ),
                       TextFormField(
-                        autofillHints: const [AutofillHints.username],
                         controller: nameController,
                         style: kInputStyle,
                         onChanged: (value) {
@@ -241,7 +241,7 @@ class _SignUpState extends State<SignUp> {
                               setState(() {
                                 isLoading = true;
                               });
-                              final customerData = Customer(
+                              final userData = AppUser(
                                 name: name,
                                 email: email,
                                 isTailor: iAmTailor,
@@ -252,42 +252,48 @@ class _SignUpState extends State<SignUp> {
                                   .createUserWithEmailAndPassword(
                                       email: email, password: password);
                               if (userCredentials.user != null) {
-                                userCredentials.user!
-                                    .updateDisplayName(name)
-                                    .then((value) {
-                                  FirebaseFirestore.instance
-                                      .collection('customers')
-                                      .add(customerData.toJson())
-                                      .then((docRef) {
-                                    customerData.id = docRef.id;
-                                    docRef.update(customerData.toJson());
-                                  });
-                                  print('"Customer DATA inserted.');
+                                //no need to update name in authenticaion fields
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .add(userData.toJson())
+                                    .then((docRef) async {
+                                  userData.id = docRef.id;
+                                  docRef.update(userData.toJson()).then(
+                                      (value) => print(
+                                          'user id updated in firebase.'));
                                 });
+                                print('app user DATA inserted.');
                               }
-                              setState(() {
-                                isLoading = false;
-                              });
                               await showMyDialog(context, 'Info.',
                                   "Account created successfully",
                                   isError: false, disposeAfterMillis: 1000);
-                              clearFields();
-                              if (customerData.isTailor) {
-                                await FirebaseAuth.instance
-                                    .signInWithEmailAndPassword(
-                                        email: email, password: password);
+                              FirebaseAuth.instance
+                                  .signInWithEmailAndPassword(
+                                      email: email, password: password)
+                                  .then((value) {
+                                if (mounted) {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
+                                print("Going to register");
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => TailorRegistration(
-                                      customerData: customerData,
-                                      fromScreen: SignUp.id,
-                                    ),
+                                    builder: (context) => userData.isTailor
+                                        ? TailorRegistration(
+                                            userData: userData,
+                                            fromScreen: SignUp.id,
+                                          )
+                                        : CustomerRegistration(
+                                            fromScreen: SignUp.id,
+                                            userData: userData,
+                                          ),
                                   ),
                                 );
-                              } else {
-                                Navigator.pop(context);
-                              }
+                              });
+
+                              clearFields();
                             } on FirebaseAuthException catch (e) {
                               if (e.code == "email-already-in-use") {
                                 showMyDialog(
@@ -309,11 +315,15 @@ class _SignUpState extends State<SignUp> {
                                 );
                               }
                               print("Sign up exception: ${e.code}");
+                            } catch (e) {
+                              print("Exception while sign up: $e");
                             }
                           }
-                          setState(() {
-                            isLoading = false;
-                          });
+                          if (mounted) {
+                            setState(() {
+                              isLoading = false;
+                            });
+                          }
                         },
                       ),
                       const SizedBox(

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dresssew/main.dart';
+import 'package:dresssew/models/app_user.dart';
 import 'package:dresssew/models/customer.dart';
 import 'package:dresssew/models/shop.dart';
 import 'package:dresssew/utilities/constants.dart';
@@ -27,13 +27,13 @@ import 'home.dart';
 import 'login.dart';
 
 class TailorRegistration extends StatefulWidget {
-  final Customer customerData;
+  final AppUser userData;
   //from which screen user has navigated to this screen if its signup then pop back to login
   //or if its login then push to home
   final String fromScreen;
 
   const TailorRegistration(
-      {super.key, required this.customerData, this.fromScreen = Login.id});
+      {super.key, required this.userData, this.fromScreen = Login.id});
   @override
   _TailorRegitrationState createState() => _TailorRegitrationState();
 }
@@ -90,7 +90,6 @@ class _TailorRegitrationState extends State<TailorRegistration> {
     }
     overallExpertise.sort();
     initialImageUrl = 'assets/user.png';
-    customer = widget.customerData;
     phoneNoController.addListener(() {
       if (mounted) {
         setState(() {});
@@ -176,7 +175,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
           SizedBox(height: size.height * 0.01),
           Text(
             'Shop Info.',
-            style: kTitleStyle.copyWith(fontSize: 35),
+            style: kTitleStyle.copyWith(fontSize: 30),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: size.height * 0.02),
@@ -264,8 +263,11 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                 .add(tailor!.toJson())
                 .then((doc) {
               tailor!.id = doc.id;
+              FirebaseAuth.instance.currentUser!
+                  .updateDisplayName(widget.userData.name)
+                  .then((value) => print('Display name updated.'));
               doc.update(tailor!.toJson()).then((value) {
-                customer!.isRegisteredTailor = true;
+                widget.userData.isRegistered = true;
                 if (mounted) {
                   setState(() {
                     taskSuccessful = true;
@@ -273,11 +275,11 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                 }
                 tailor!.id = doc.id;
                 doc.update(tailor!.toJson()).then((value) {
-                  customer!.isRegisteredTailor = true;
+                  widget.userData.isRegistered = true;
                   FirebaseFirestore.instance
-                      .collection('customers')
-                      .doc(customer!.id)
-                      .update(customer!.toJson());
+                      .collection('users')
+                      .doc(widget.userData.id)
+                      .update(widget.userData.toJson());
                   print("Customer Data updated");
                 }).then((value) {
                   if (taskSuccessful) {
@@ -413,8 +415,8 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                             isUploadingLogo = true;
                           });
 
-                          final storageRef =
-                              storage.child('${customer!.email}/logoUrl.png');
+                          final storageRef = storage
+                              .child('${widget.userData.email}/logoUrl.png');
                           final uploadTask =
                               await storageRef.putFile(File(file.path));
                           final downloadUrl =
@@ -489,9 +491,10 @@ class _TailorRegitrationState extends State<TailorRegistration> {
         SizedBox(height: size.height * 0.01),
         Text(
           'Personal Info.',
-          style: kTitleStyle.copyWith(fontSize: 35),
+          style: kTitleStyle.copyWith(fontSize: 30),
           textAlign: TextAlign.center,
         ),
+        SizedBox(height: size.width * 0.01),
         Align(alignment: Alignment.center, child: buildProfilePicture(size)),
         buildSelectProfileImageButton(size),
         SizedBox(height: size.height * 0.01),
@@ -557,8 +560,8 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                         if (!taskSuccessful)
                           showMyBanner(context, 'Timed out.');
                       }));
-                  final storageRef =
-                      storage.child('${customer!.email}/profileImage.png');
+                  final storageRef = storage
+                      .child('${widget.userData.email}/profileImage.png');
                   final uploadTask = await storageRef.putFile(File(file.path));
                   final downloadUrl = await uploadTask.ref.getDownloadURL();
                   setState(() {
@@ -659,15 +662,16 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               selectedExpertise.isNotEmpty) {
             print("Validation successful");
             tailor = Tailor(
-              tailorName: capitalizeText(customer!.name),
-              email: customer!.email,
+              tailorName: capitalizeText(widget.userData.name),
+              email: widget.userData.email,
+              userDocId: widget.userData.id,
               gender: gender!,
               stitchingType: stitchingType!,
               expertise: selectedExpertise,
               phoneNumber: countryCode + phoneNoController.text,
               profileImageUrl: profileImageUrl,
               customizes: customizesDresses,
-              customerDocId: customer!.id,
+              customerDocId: widget.userData.id,
               rates: expertiseRatesList,
               experience: int.parse(experienceController.text.trim()),
             );
@@ -687,7 +691,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
         children: [
           Text(
             'Verify phone number',
-            style: kTitleStyle.copyWith(fontSize: 35),
+            style: kTitleStyle.copyWith(fontSize: 30),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: size.height * 0.05),
@@ -1202,8 +1206,8 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                 }
               });
 
-              final storageRef =
-                  storage.child('${customer!.email}/shopImage$imageNo.png');
+              final storageRef = storage
+                  .child('${widget.userData.email}/shopImage$imageNo.png');
               final uploadTask = await storageRef.putFile(File(file.path));
               final downloadUrl = await uploadTask.ref.getDownloadURL();
               setState(() {

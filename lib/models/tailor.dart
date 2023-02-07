@@ -4,6 +4,7 @@ class Tailor {
   String tailorName;
   String email;
   String? id;
+  String? userDocId;
   Gender gender;
   String? phoneNumber;
   StitchingType stitchingType;
@@ -20,6 +21,7 @@ class Tailor {
 
   Tailor({
     this.id,
+    this.userDocId,
     required this.tailorName,
     this.phoneNumber,
     this.shop,
@@ -39,6 +41,7 @@ class Tailor {
 
   static Tailor fromJson(Map<String, dynamic> json) => Tailor(
       id: json['id'],
+      userDocId: json['user_doc_id'],
       customerDocId: json['customer_doc_id'],
       tailorName: json['tailor_name'],
       phoneNumber: json['phone_number'],
@@ -61,6 +64,7 @@ class Tailor {
         'id': id,
         'customer_doc_id': customerDocId,
         'tailor_name': tailorName,
+        'user_doc_id': userDocId,
         'phone_number': phoneNumber,
         'email': email,
         'gender': gender.name,

@@ -7,9 +7,11 @@ class ItemRateInputTile extends StatelessWidget {
   final String title;
   final Function(String?) onChanged;
   final TextEditingController controller;
+  final bool validateField;
 
   const ItemRateInputTile({
     super.key,
+    this.validateField = true,
     required this.title,
     required this.onChanged,
     required this.controller,
@@ -31,12 +33,14 @@ class ItemRateInputTile extends StatelessWidget {
             child: TextFormField(
               controller: controller,
               textAlign: TextAlign.center,
-              validator: (val) {
-                if (val == null || val.isEmpty) {
-                  return "enter a value";
-                }
-                return null;
-              },
+              validator: !validateField
+                  ? null
+                  : (val) {
+                      if (val == null || val.isEmpty) {
+                        return "enter a value";
+                      }
+                      return null;
+                    },
               style: kInputStyle,
               decoration: kTextFieldDecoration.copyWith(
                 contentPadding:

@@ -1,43 +1,42 @@
+import 'package:dresssew/models/measurement.dart';
 import 'package:dresssew/models/tailor.dart';
 
 class Customer {
   String? id;
   String name;
   String email;
-  bool isRegisteredTailor;
-  bool isTailor;
   Gender? gender;
   List<OrdersPlaced> orders;
   String? phoneNumber;
-  List<int> profileImageBytes;
+  String? profileImageUrl;
   String? address;
-  String dateJoined;
+  String? userDocId;
+  List<Measurement> measurements;
 
-  Customer(
-      {this.id,
-      this.isRegisteredTailor = false,
-      required this.dateJoined,
-      required this.name,
-      required this.email,
-      this.gender,
-      this.orders = const [],
-      this.profileImageBytes = const [],
-      this.address,
-      this.phoneNumber,
-      required this.isTailor});
+  Customer({
+    this.id,
+    required this.name,
+    required this.email,
+    this.gender,
+    this.orders = const [],
+    this.userDocId,
+    this.profileImageUrl,
+    this.address,
+    this.phoneNumber,
+    this.measurements = const [],
+  });
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
         'email': email,
+        'user_doc_id': userDocId,
         'gender': gender?.name,
-        'date_joined': dateJoined,
-        'is_tailor': isTailor,
         'orders': orders.map((e) => e.toJson()).toList(),
         'phone_number': phoneNumber,
-        'is_registered': isRegisteredTailor,
         'address': address,
-        'profile_image_bytes': profileImageBytes,
+        'measurements': measurements.map((e) => e.toJson()).toList(),
+        'profile_image_url': profileImageUrl,
       };
 
   static Customer fromJson(Map<String, dynamic> json) {
@@ -45,15 +44,21 @@ class Customer {
         name: json['name'],
         gender: json['gender'] != null ? getGender(json['gender']) : null,
         email: json['email'],
-        isTailor: json['is_tailor'],
-        profileImageBytes: json['profile_image_bytes'].cast<int>(),
+        profileImageUrl: json['profile_image_url'],
         id: json['id'],
-        isRegisteredTailor: json['is_registered'],
+        userDocId: json['user_doc_id'],
         address: json['address'],
+        measurements: (json['measurements'] as List)
+            .map((e) => Measurement.fromJson(e))
+            .toList(),
         phoneNumber: json['phone_number'],
-        dateJoined: json['date_joined'],
         orders: (json['orders'] as List)
             .map((e) => OrdersPlaced.fromJson(e))
             .toList());
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
   }
 }

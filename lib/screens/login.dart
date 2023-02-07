@@ -11,7 +11,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/customer.dart';
+import '../models/app_user.dart';
+import 'customer_registration.dart';
 import 'forgot_password.dart';
 import 'home.dart';
 import 'sign_up.dart';
@@ -182,30 +183,43 @@ class _LoginState extends State<Login> {
                               prefs.setBool(Login.isLoggedInText, true);
                               print("Login Successful");
                               print(response.user);
-                              final customerData = await FirebaseFirestore
+                              final appUserData = await FirebaseFirestore
                                   .instance
-                                  .collection("customers")
+                                  .collection("users")
                                   .where('email', isEqualTo: email.trim())
                                   .limit(1)
                                   .get();
-                              final customer = Customer.fromJson(
-                                  customerData.docs.first.data());
-                              print("Customer loaded: ${customer.toJson()}");
-                              if (customer.isTailor) {
-                                if (!customer.isRegisteredTailor) {
-                                  await Navigator.pushReplacement(
+                              final appUser = AppUser.fromJson(
+                                  appUserData.docs.first.data());
+                              print("Customer loaded: ${appUser.toJson()}");
+                              //if is not registered as customer or tailor but just has created account
+                              if (!appUser.isRegistered) {
+                                //if not registered as tailor but creaed account as  tialor
+                                if (appUser.isTailor) {
+                                  Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            TailorRegistration(
-                                                customerData: customer)),
+                                      builder: (context) =>
+                                          TailorRegistration(userData: appUser),
+                                    ),
                                   );
-                                } else {
-                                  Navigator.pushReplacementNamed(
-                                      context, Home.id);
                                 }
-                              } else {
-                                //navigate to customer app view
+                                //if not registered as customer but created account as customer
+                                else {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          CustomerRegistration(
+                                              userData: appUser),
+                                    ),
+                                  );
+                                }
+                              }
+                              //if already registered.
+                              else {
+                                Navigator.pushReplacementNamed(
+                                    context, Home.id);
                               }
                             } on FirebaseAuthException catch (e) {
                               if (e.code == "user-not-found") {
