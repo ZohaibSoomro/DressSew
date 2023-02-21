@@ -1,5 +1,6 @@
 import 'package:dresssew/screens/login.dart';
 import 'package:dresssew/utilities/constants.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -16,13 +17,18 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+    if(mounted){
+      setState(() {
+        
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Welcome!', style: kInputStyle.copyWith(fontSize: 20)),
+        title: Text('Welcome!', style: kInputStyle.copyWith(fontSize: 20)).tr(),
         actions: [
           IconButton(
             onPressed: () async {

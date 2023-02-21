@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import 'constants.dart';
@@ -12,14 +13,14 @@ Future showMyBanner(context, text) async {
       content: Text(
         text,
         style: kTextStyle,
-      ),
+      ).tr(),
       backgroundColor: Colors.white70,
       actions: [
         TextButton(
           onPressed: () {
             ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
           },
-          child: const Text('Dismiss', style: kInputStyle),
+          child: const Text('Dismiss', style: kInputStyle).tr(),
         )
       ],
     ),
@@ -37,12 +38,14 @@ Future showMyDialog(context, String title, String msg,
       return AlertDialog(
         title: Center(
             child: Text(title,
-                style: kTitleStyle.copyWith(
-                    color: isError ? Colors.red : Colors.blue, fontSize: 22))),
+                    style: kTitleStyle.copyWith(
+                        color: isError ? Colors.red : Colors.blue,
+                        fontSize: 22))
+                .tr()),
         content: Text(
           msg,
           textAlign: TextAlign.center,
-        ),
+        ).tr(),
       );
     },
   );

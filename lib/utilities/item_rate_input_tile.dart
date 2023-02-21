@@ -1,3 +1,4 @@
+import 'package:dresssew/utilities/rate_input_text_field.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -28,29 +29,10 @@ class ItemRateInputTile extends StatelessWidget {
             title,
             style: kInputStyle.copyWith(fontSize: 16),
           ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.3,
-            child: TextFormField(
-              controller: controller,
-              textAlign: TextAlign.center,
-              validator: !validateField
-                  ? null
-                  : (val) {
-                      if (val == null || val.isEmpty) {
-                        return "enter a value";
-                      }
-                      return null;
-                    },
-              style: kInputStyle,
-              decoration: kTextFieldDecoration.copyWith(
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 2, horizontal: 10),
-                hintStyle: kInputStyle.copyWith(fontSize: 12),
-                errorStyle: kInputStyle.copyWith(fontSize: 10),
-              ),
-              keyboardType: TextInputType.number,
-              onChanged: onChanged,
-            ),
+          RateInputField(
+            validateField: validateField,
+            controller: controller,
+            onChanged: onChanged,
           ),
         ],
       ),

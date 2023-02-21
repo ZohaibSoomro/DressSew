@@ -1,4 +1,5 @@
 import 'package:dresssew/utilities/constants.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class RectangularRoundedButton extends StatelessWidget {
@@ -30,7 +31,7 @@ class RectangularRoundedButton extends StatelessWidget {
         child: Text(
           buttonName,
           style: kTextStyle.copyWith(fontSize: fontSize, color: Colors.white),
-        ),
+        ).tr(),
       ),
     );
   }

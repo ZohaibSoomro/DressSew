@@ -5,9 +5,9 @@ import 'package:dresssew/models/app_user.dart';
 import 'package:dresssew/models/customer.dart';
 import 'package:dresssew/models/measurement.dart';
 import 'package:dresssew/utilities/constants.dart';
-import 'package:dresssew/utilities/item_rate_input_tile.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
 import 'package:dresssew/utilities/rectangular_button.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -23,6 +23,7 @@ import 'package:pin_code_text_field/pin_code_text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/tailor.dart';
+import '../utilities/rate_input_text_field.dart';
 import 'home.dart';
 import 'login.dart';
 
@@ -59,13 +60,14 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
   final storage = FirebaseStorage.instance.ref();
 
   List<Measurement> measurements = List.generate(
-      Measurements.values.length,
-      (index) => Measurement(
-          title: capitalizeText(
-              spaceSeparatedNameOfMeasurement(Measurements.values[index].name)),
-          measure: 0));
+    measurementImages.length,
+    (index) => Measurement(
+        title: capitalizeText(spaceSeparatedNameOfMeasurement(
+            measurementImages.keys.elementAt(index))),
+        measure: 0),
+  );
   final measurementsControllers = List.generate(
-      Measurements.values.length, (index) => TextEditingController(text: '0'));
+      measurementImages.length, (index) => TextEditingController(text: '0'));
 
   @override
   void initState() {
@@ -275,7 +277,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
       child: Text(
         'Clear',
         style: kTextStyle.copyWith(color: Colors.white),
-      ),
+      ).tr(),
     );
   }
 
@@ -699,18 +701,53 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: List.generate(
             measurements.length,
-            (i) => ItemRateInputTile(
-              title: capitalizeText(
-                spaceSeparatedNameOfMeasurement(measurements[i].title),
+            (i) => Container(
+              margin: EdgeInsets.symmetric(
+                  horizontal: 2, vertical: size.height * 0.02),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: size.width * 0.4,
+                    height: size.height * 0.1,
+                    child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: Image.asset(
+                                measurementImages.values.toList()[i]))),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          capitalizeText(
+                            spaceSeparatedNameOfMeasurement(
+                                measurementImages.keys.toList()[i]),
+                          ),
+                          style: kInputStyle,
+                        ),
+                      ),
+                      SizedBox(height: size.height * 0.01),
+                      RateInputField(
+                        suffixText: "in",
+                        onChanged: (val) {
+                          if (val != null && val.isNotEmpty) {
+                            measurements[i].measure = double.parse(val);
+                            if (mounted) setState(() {});
+                          }
+                        },
+                        validateField: false,
+                        controller: measurementsControllers[i],
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              onChanged: (val) {
-                if (val != null && val.isNotEmpty) {
-                  measurements[i].measure = double.parse(val);
-                  if (mounted) setState(() {});
-                }
-              },
-              validateField: false,
-              controller: measurementsControllers[i],
             ),
           ),
         ),
