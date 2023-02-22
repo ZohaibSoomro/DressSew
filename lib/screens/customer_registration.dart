@@ -22,6 +22,7 @@ import 'package:loading_overlay/loading_overlay.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../main.dart';
 import '../models/tailor.dart';
 import '../utilities/rate_input_text_field.dart';
 import 'home.dart';
@@ -101,7 +102,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
           title: const Text(
             'Register as Customer',
             style: kInputStyle,
-          ),
+          ).tr(),
           centerTitle: true,
           actions: [if (phoneNumberVerified) buildClearFormButton(context)],
         ),
@@ -291,7 +292,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
           'Personal Info.',
           style: kTitleStyle.copyWith(fontSize: 30),
           textAlign: TextAlign.center,
-        ),
+        ).tr(),
         SizedBox(height: size.width * 0.01),
         Align(alignment: Alignment.center, child: buildProfilePicture(size)),
         buildSelectProfileImageButton(size),
@@ -299,10 +300,10 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
         buildGenderRow(),
         SizedBox(height: size.height * 0.01),
         buildTextFormField(
-          'address',
+         isUrduActivated?'پتہ' :'address',
           addressController,
           FontAwesomeIcons.locationDot,
-          'enter shop address',
+          isUrduActivated?'دکان کا پتہ درج کریں':'enter shop address',
           keyboard: TextInputType.streetAddress,
         ),
         SizedBox(height: size.height * 0.015),
@@ -430,7 +431,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
             'Verify phone number',
             style: kTitleStyle.copyWith(fontSize: 30),
             textAlign: TextAlign.center,
-          ),
+          ).tr(),
           SizedBox(height: size.height * 0.05),
           buildPhoneNumberField(),
           buildSendCodeButton(),
@@ -450,7 +451,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
               color: gender == null && isNextBtnPressed
                   ? Colors.red
                   : Colors.black),
-        ),
+        ).tr(),
         buildRadioTile('Male', Gender.male),
         buildRadioTile('Female', Gender.female),
       ],
@@ -470,7 +471,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
             });
           },
         ),
-        Text(text, style: kTextStyle.copyWith(fontSize: 15)),
+        Text(text, style: kTextStyle.copyWith(fontSize: 15)).tr(),
       ],
     );
   }
@@ -582,7 +583,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                         'Enter pin code sent to ${countryCode + phoneNoController.text}',
                         style: kInputStyle.copyWith(fontSize: 20, height: 1.5),
                         textAlign: TextAlign.center,
-                      ),
+                      ).tr(),
                       SizedBox(
                         height: MediaQuery.of(context).size.height * 0.07,
                       ),
@@ -594,7 +595,8 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                               autofocus: true,
                               controller: pincodeController,
                               maxLength: 6,
-                              pinTextStyle: kInputStyle,
+                              pinTextStyle: kInputStyle.copyWith(locale: context.locale),
+
                             ),
                           ),
                         ),
@@ -685,15 +687,15 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
           'Add Measurements',
           textAlign: TextAlign.center,
           style: kTitleStyle.copyWith(fontSize: 30),
-        ),
+        ).tr(),
         SizedBox(
           height: size.width * 0.01,
         ),
         Text(
-          'You can skip field(s) that you don\'t have measurements of, for now.',
+          "You can skip field(s) that you don't have measurements of, for now.",
           textAlign: TextAlign.center,
           style: kTitleStyle.copyWith(fontSize: 12, color: Colors.grey),
-        ),
+        ).tr(),
         SizedBox(
           height: size.width * 0.02,
         ),
@@ -716,7 +718,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                         child: ClipRRect(
                             borderRadius: BorderRadius.circular(10.0),
                             child: Image.asset(
-                                measurementImages.values.toList()[i]))),
+                                measurementImages.values.elementAt(i)))),
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -727,18 +729,22 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                         child: Text(
                           capitalizeText(
                             spaceSeparatedNameOfMeasurement(
-                                measurementImages.keys.toList()[i]),
+                                measurementImages.keys.elementAt(i)),
                           ),
                           style: kInputStyle,
-                        ),
+                        ).tr(),
                       ),
                       SizedBox(height: size.height * 0.01),
                       RateInputField(
-                        suffixText: "in",
+                        suffixText:isUrduActivated?"انچ": "in",
                         onChanged: (val) {
                           if (val != null && val.isNotEmpty) {
-                            measurements[i].measure = double.parse(val);
-                            if (mounted) setState(() {});
+                            try {
+                              measurements[i].measure = double.parse(val);
+                              if (mounted) setState(() {});
+                            }catch(e){
+                              print('Exception parsing :$e');
+                            }
                           }
                         },
                         validateField: false,

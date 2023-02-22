@@ -1,3 +1,4 @@
+import 'package:dresssew/main.dart';
 import 'package:flutter/material.dart';
 
 import 'constants.dart';
@@ -26,7 +27,7 @@ class RateInputField extends StatelessWidget {
             ? null
             : (val) {
                 if (val == null || val.isEmpty) {
-                  return "enter a value";
+                  return isUrduActivated? "ایک قدر درج کریں":"enter a value";
                 }
                 return null;
               },

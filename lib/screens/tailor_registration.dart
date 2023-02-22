@@ -80,15 +80,6 @@ class _TailorRegitrationState extends State<TailorRegistration> {
   @override
   void initState() {
     super.initState();
-    //remove duplicates
-    for (int i = 0; i < overallExpertise.length - 1; i++) {
-      for (int j = i + 1; j < overallExpertise.length; j++) {
-        if (overallExpertise[i] == overallExpertise[j]) {
-          overallExpertise.removeAt(j);
-        }
-      }
-    }
-    overallExpertise.sort();
     initialImageUrl = 'assets/user.png';
     phoneNoController.addListener(() {
       if (mounted) {
