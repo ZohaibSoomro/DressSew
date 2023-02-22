@@ -10,10 +10,7 @@ import 'package:dresssew/utilities/rectangular_button.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -99,35 +96,61 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
       isLoading: isVerifyingPhoneNumber || isSavingDataInFirebase,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
-            'Register as Customer',
-            style: kInputStyle,
-          ).tr(),
+          title: FittedBox(
+            child: const Text(
+              'Register as Customer',
+              style: kInputStyle,
+            ).tr(),
+          ),
           centerTitle: true,
-          actions: [if (phoneNumberVerified) buildClearFormButton(context)],
+          actions: [
+            if (phoneNumberVerified) buildClearFormButton(context),
+            IconButton(
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                prefs.setBool(Login.isLoggedInText, false);
+                Navigator.pushReplacementNamed(context, Login.id);
+              },
+              icon: const Icon(FontAwesomeIcons.arrowRightFromBracket),
+            ),
+          ],
         ),
-        body: Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: size.width * 0.05, vertical: size.height * 0.01),
-          child: SingleChildScrollView(
-            child: AutofillGroup(
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (!phoneNumberVerified)
-                      buildPhoneNumberVerificationPage(size),
-                    if (phoneNumberVerified && customer == null)
-                      buildPersonalInfoColumn(context),
-                    if (phoneNumberVerified && customer != null)
-                      buildAddMeasurementsPage(),
-                  ],
+        body: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: size.width * 0.05, vertical: size.height * 0.01),
+              child: SingleChildScrollView(
+                child: AutofillGroup(
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (!phoneNumberVerified)
+                          buildPhoneNumberVerificationPage(size),
+                        if (phoneNumberVerified && customer == null)
+                          buildPersonalInfoColumn(context),
+                        if (phoneNumberVerified && customer != null)
+                          buildAddMeasurementsPage(),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+            Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(5),
+                child: buildTranslateButton(context, onTranslated: () {
+                  setState(() {});
+                }),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -300,10 +323,10 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
         buildGenderRow(),
         SizedBox(height: size.height * 0.01),
         buildTextFormField(
-         isUrduActivated?'پتہ' :'address',
+          isUrduActivated ? 'پتہ' : 'address',
           addressController,
           FontAwesomeIcons.locationDot,
-          isUrduActivated?'دکان کا پتہ درج کریں':'enter shop address',
+          isUrduActivated ? 'دکان کا پتہ درج کریں' : 'enter shop address',
           keyboard: TextInputType.streetAddress,
         ),
         SizedBox(height: size.height * 0.015),
@@ -595,8 +618,8 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                               autofocus: true,
                               controller: pincodeController,
                               maxLength: 6,
-                              pinTextStyle: kInputStyle.copyWith(locale: context.locale),
-
+                              pinTextStyle:
+                                  kInputStyle.copyWith(locale: context.locale),
                             ),
                           ),
                         ),
@@ -714,12 +737,15 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                     width: size.width * 0.4,
                     height: size.height * 0.1,
                     child: Align(
-                        alignment: Alignment.centerLeft,
+                        alignment: isUrduActivated
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
                         child: ClipRRect(
                             borderRadius: BorderRadius.circular(10.0),
                             child: Image.asset(
                                 measurementImages.values.elementAt(i)))),
                   ),
+                  SizedBox(),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisSize: MainAxisSize.min,
@@ -736,13 +762,13 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                       ),
                       SizedBox(height: size.height * 0.01),
                       RateInputField(
-                        suffixText:isUrduActivated?"انچ": "in",
+                        suffixText: isUrduActivated ? "انچ" : "in",
                         onChanged: (val) {
                           if (val != null && val.isNotEmpty) {
                             try {
                               measurements[i].measure = double.parse(val);
                               if (mounted) setState(() {});
-                            }catch(e){
+                            } catch (e) {
                               print('Exception parsing :$e');
                             }
                           }

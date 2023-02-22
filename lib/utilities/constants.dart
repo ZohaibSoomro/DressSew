@@ -25,64 +25,69 @@ const kTextFieldDecoration = InputDecoration(
   ),
 );
 
-// const ladiesExpertise = [
-//   "Blouse",
-//   "Sweater",
-//   "Trouser Shirt",
-//   "Gowns",
-//   "Cultural outfit",
-//   "Churidar",
-//   "Frock",
-//   "Costumes",
-//   "Coats"
-// ];
-// const menExpertise = [
-//   "Suits",
-//   "Uniforms",
-//   "Cultural outfit",
-//   "Trouser Shirt",
-//   "Coats",
-//   "WaistCoat",
-//   "Shalwar Kameez",
-//   "Casual",
-//   "Costumes",
-//   "Party wear"
-// ];
-// final overallExpertise = [
-//   "Casual",
-//   "Traditional",
-//   "Formal",
-//   "Party wear",
-//   "Costumes",
-//   ...menExpertise,
-//   ...ladiesExpertise
-// ];
+const ladiesExpertise = [
+  "Blouse",
+  "Sweater",
+  "Trouser Shirt",
+  "Gowns",
+  "Cultural outfit",
+  "Churidar",
+  "Frock",
+  "Costumes",
+  "Coats"
+];
+const menExpertise = [
+  "Suits",
+  "Uniforms",
+  "Cultural outfit",
+  "Trouser Shirt",
+  "Coats",
+  "WaistCoat",
+  "Shalwar Kameez",
+  "Casual",
+  "Costumes",
+  "Party wear"
+];
+final overallExpertise = [
+  "Casual",
+  "Traditional",
+  "Formal",
+  "Party wear",
+  "Costumes",
+  ...menExpertise,
+  ...ladiesExpertise
+];
 
-
-final Map<String,List<String>> menCategories= {
-  "Tops":["T-shirts", "Dress Shirts", "Sweaters"],
-  "Bottoms":["Jeans", "Pants", "Shorts", "Pajamas"],
-  "Outwear":["Jackets","Coat", "Vests", "Blazers"],
-  "Suits":["Uniform", "Business Suits", "Two Piece Suits", "Three Piece Suits", "Shalwar Kameez"],
-  "Accessories":["Ties", "Hats"],
-  "More":["Cultural Outfit", "Costumes"],
+final Map<String, List<String>> menCategories = {
+  "Tops": ["T-shirts", "Dress Shirts", "Sweaters"],
+  "Bottoms": ["Jeans", "Pants", "Shorts", "Pajamas"],
+  "Outwear": ["Jackets", "Coat", "Vests", "Blazers"],
+  "Suits": [
+    "Uniform",
+    "Business Suits",
+    "Two Piece Suits",
+    "Three Piece Suits",
+    "Shalwar Kameez"
+  ],
+  "Accessories": ["Ties", "Hats"],
+  "More": ["Cultural Outfit", "Costumes"],
 };
 
-final Map<String,List<String>> ladiesCategories= {
-  "Tops":["T-shirts", "Blouses", "Sweaters"],
-  "Bottoms":["Jeans", "Pants", "Shorts", "Skirts"],
-  "Outwear":["Jackets","Coat", "Vests", "Blazers"],
-  "Dresses":["Frock", "Gowns", "Churidar"],
-  "Accessories":["Scarves", "Hats"],
-  "More":["Cultural Outfit", "Costumes"],
+final Map<String, List<String>> ladiesCategories = {
+  "Tops": ["T-shirts", "Blouses", "Sweaters"],
+  "Bottoms": ["Jeans", "Pants", "Shorts", "Skirts"],
+  "Outwear": ["Jackets", "Coat", "Vests", "Blazers"],
+  "Dresses": ["Frock", "Gowns", "Churidar"],
+  "Accessories": ["Scarves", "Hats"],
+  "More": ["Cultural Outfit", "Costumes"],
 };
 
-final Map<String,List<String>> overallCategories= {
-  "Tops":["Dress Shirts",...?ladiesCategories["Tops"]],
-  "Bottoms":["Jeans", "Pants", "Shorts", "Pajamas","Skirts"],
-  "Outwear":[...?ladiesCategories["Outwear"]],
-  "Suits":[...?menCategories["Suits"]], //both are same
-  "Dresses":[...?ladiesCategories["Dresses"]],
-  "Accessories":["Ties", ...?ladiesCategories["Accessories"]],
-  "More":[...?menCategories["More"]], //both are same
+final Map<String, List<String>> overallCategories = {
+  "Tops": ["Dress Shirts", ...?ladiesCategories["Tops"]],
+  "Bottoms": ["Jeans", "Pants", "Shorts", "Pajamas", "Skirts"],
+  "Outwear": [...?ladiesCategories["Outwear"]],
+  "Suits": [...?menCategories["Suits"]], //both are same
+  "Dresses": [...?ladiesCategories["Dresses"]],
+  "Accessories": ["Ties", ...?ladiesCategories["Accessories"]],
+  "More": [...?menCategories["More"]], //both are same
 };

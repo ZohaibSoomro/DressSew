@@ -8,12 +8,10 @@ import 'package:dresssew/utilities/constants.dart';
 import 'package:dresssew/utilities/item_rate_input_tile.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
 import 'package:dresssew/utilities/rectangular_button.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -22,6 +20,7 @@ import 'package:loading_overlay/loading_overlay.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../main.dart';
 import '../models/tailor.dart';
 import 'home.dart';
 import 'login.dart';
@@ -111,35 +110,61 @@ class _TailorRegitrationState extends State<TailorRegistration> {
       isLoading: isVerifyingPhoneNumber || isSavingDataInFirebase,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
-            'Register as Tailor',
-            style: kInputStyle,
+          title: FittedBox(
+            child: const Text(
+              'Register as Tailor',
+              style: kInputStyle,
+            ).tr(),
           ),
           centerTitle: true,
-          actions: [if (phoneNumberVerified) buildClearFormButton(context)],
+          actions: [
+            if (phoneNumberVerified) buildClearFormButton(context),
+            IconButton(
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                prefs.setBool(Login.isLoggedInText, false);
+                Navigator.pushReplacementNamed(context, Login.id);
+              },
+              icon: const Icon(FontAwesomeIcons.arrowRightFromBracket),
+            ),
+          ],
         ),
-        body: Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: size.width * 0.05, vertical: size.height * 0.01),
-          child: SingleChildScrollView(
-            child: AutofillGroup(
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (!phoneNumberVerified)
-                      buildPhoneNumberVerificationPage(size),
-                    if (phoneNumberVerified && tailor == null)
-                      buildPersonalInfoColumn(size, context),
-                    if (phoneNumberVerified && tailor != null)
-                      buildShopInfoColumn(size),
-                  ],
+        body: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: size.width * 0.05, vertical: size.height * 0.01),
+              child: SingleChildScrollView(
+                child: AutofillGroup(
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (!phoneNumberVerified)
+                          buildPhoneNumberVerificationPage(size),
+                        if (phoneNumberVerified && tailor == null)
+                          buildPersonalInfoColumn(size, context),
+                        if (phoneNumberVerified && tailor != null)
+                          buildShopInfoColumn(size),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+            Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(5),
+                child: buildTranslateButton(context, onTranslated: () {
+                  setState(() {});
+                }),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -168,40 +193,42 @@ class _TailorRegitrationState extends State<TailorRegistration> {
             'Shop Info.',
             style: kTitleStyle.copyWith(fontSize: 30),
             textAlign: TextAlign.center,
-          ),
+          ).tr(),
           SizedBox(height: size.height * 0.02),
           buildTextFormField(
-            'website url(optional)',
+            isUrduActivated
+                ? 'ویب سائٹ کی لنک (اختیاری)'
+                : 'website url(optional)',
             websiteUrlController,
             FontAwesomeIcons.globe,
             null,
             keyboard: TextInputType.url,
           ),
           buildTextFormField(
-            'shop name',
+            isUrduActivated ? "دکان کا نام" : 'shop name',
             shopNameController,
             FontAwesomeIcons.shop,
-            'enter shop name',
+            isUrduActivated ? "دکان کا نام درج کریں" : 'enter shop name',
             keyboard: TextInputType.name,
           ),
           buildTextFormField(
-            'address',
+            isUrduActivated ? "پتہ" : 'address',
             shopAddressController,
             FontAwesomeIcons.locationDot,
-            'enter shop address',
+            isUrduActivated ? "دکان کا پتہ درج کریں" : 'enter shop address',
             keyboard: TextInputType.streetAddress,
           ),
           buildTextFormField(
-            'city',
+            isUrduActivated ? 'شہر' : 'city',
             cityController,
             FontAwesomeIcons.city,
-            'enter city name',
+            isUrduActivated ? 'شہر کا نام درج کریں' : 'enter city name',
           ),
           buildTextFormField(
-            'postal code',
+            isUrduActivated ? 'پوسٹل کوڈ' : 'postal code',
             postalCodeController,
             Icons.code,
-            'enter postal code',
+            isUrduActivated ? 'پوسٹل کوڈ درج کریں' : 'enter postal code',
             keyboard: TextInputType.number,
           ),
           buildShopLogoContainer(size),
@@ -328,7 +355,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                 style: kInputStyle.copyWith(
                   fontSize: 18,
                 ),
-              ),
+              ).tr(),
               if (shopImagesList.isNotEmpty)
                 Text(
                   "(${shopImagesList.length}/2)",
@@ -341,8 +368,9 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Text('(Add at least 2 images)',
-                        style: kTextStyle.copyWith(
-                            color: Colors.red, fontSize: 12)),
+                            style: kTextStyle.copyWith(
+                                color: Colors.red, fontSize: 12))
+                        .tr(),
                   ),
                 )
             ],
@@ -389,14 +417,15 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                   style: kInputStyle.copyWith(
                     fontSize: 18,
                   ),
-                ),
+                ).tr(),
                 if (logoImageUrl == null && isRegisterBtnPressed)
                   Flexible(
                     child: Padding(
                       padding: const EdgeInsets.only(left: 8.0),
-                      child: Text('(Add your shop\'s logo)',
-                          style: kTextStyle.copyWith(
-                              color: Colors.red, fontSize: 12)),
+                      child: Text("(Add your shop's logo)",
+                              style: kTextStyle.copyWith(
+                                  color: Colors.red, fontSize: 12))
+                          .tr(),
                     ),
                   )
               ],
@@ -480,7 +509,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
       child: Text(
         'Clear',
         style: kTextStyle.copyWith(color: Colors.white),
-      ),
+      ).tr(),
     );
   }
 
@@ -493,7 +522,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
           'Personal Info.',
           style: kTitleStyle.copyWith(fontSize: 30),
           textAlign: TextAlign.center,
-        ),
+        ).tr(),
         SizedBox(height: size.width * 0.01),
         Align(alignment: Alignment.center, child: buildProfilePicture(size)),
         buildSelectProfileImageButton(size),
@@ -504,8 +533,15 @@ class _TailorRegitrationState extends State<TailorRegistration> {
         SizedBox(height: size.height * 0.01),
         buildCustomizesDressQuestionTile(),
         SizedBox(height: size.height * 0.01),
-        buildTextFormField('Experience in no of years', experienceController,
-            null, "Enter experience in no of years",
+        buildTextFormField(
+            isUrduActivated
+                ? 'سالوں کی تعداد میں تجربہ'
+                : 'Experience in no of years',
+            experienceController,
+            null,
+            isUrduActivated
+                ? 'سالوں کی تعداد میں تجربہ درج کریں'
+                : "Enter experience in no of years",
             keyboard: TextInputType.number),
         SizedBox(height: size.height * 0.01),
         buildExpertiseRowAndList(context, size),
@@ -581,16 +617,22 @@ class _TailorRegitrationState extends State<TailorRegistration> {
       title: Text(
         'Do you customize dresses?',
         style: kInputStyle.copyWith(fontSize: 18),
-      ),
+      ).tr(),
       subtitle: !isNextBtnPressed
           ? null
           : RichText(
               text: TextSpan(
-                text: "You answered: ",
+                text: isUrduActivated ? 'آپ نے جواب دیا: ' : "You answered: ",
                 style: kTextStyle,
                 children: [
                   TextSpan(
-                    text: customizesDresses ? 'Yes' : 'No',
+                    text: customizesDresses
+                        ? isUrduActivated
+                            ? 'ہاں'
+                            : 'Yes'
+                        : isUrduActivated
+                            ? 'نہيں'
+                            : 'No',
                     style: kTextStyle.copyWith(
                         color: Colors.blue, fontWeight: FontWeight.w900),
                   ),
@@ -633,7 +675,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               color: selectedExpertise.isEmpty && isNextBtnPressed
                   ? Colors.red
                   : Colors.black),
-        ),
+        ).tr(),
         RectangularRoundedButton(
           buttonName: 'Add',
           fontSize: 15,
@@ -692,7 +734,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
             'Verify phone number',
             style: kTitleStyle.copyWith(fontSize: 30),
             textAlign: TextAlign.center,
-          ),
+          ).tr(),
           SizedBox(height: size.height * 0.05),
           buildPhoneNumberField(),
           buildSendCodeButton(),
@@ -752,7 +794,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                 color: stitchingType == null && isNextBtnPressed
                     ? Colors.red
                     : Colors.black),
-          ),
+          ).tr(),
           SizedBox(
             width: size.width * 0.3,
             child: DropdownButton<StitchingType>(
@@ -768,7 +810,10 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                 StitchingType.values.length,
                 (index) => DropdownMenuItem(
                   value: StitchingType.values[index],
-                  child: Text(capitalizeText(StitchingType.values[index].name)),
+                  child: Text(
+                    capitalizeText(StitchingType.values[index].name),
+                    style: TextStyle(locale: context.locale),
+                  ).tr(),
                 ),
               ),
               onChanged: (item) {
@@ -802,7 +847,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               color: gender == null && isNextBtnPressed
                   ? Colors.red
                   : Colors.black),
-        ),
+        ).tr(),
         buildRadioTile('Male', Gender.male),
         buildRadioTile('Female', Gender.female),
       ],
@@ -822,7 +867,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
             });
           },
         ),
-        Text(text, style: kTextStyle.copyWith(fontSize: 15)),
+        Text(text, style: kTextStyle.copyWith(fontSize: 15)).tr(),
       ],
     );
   }
@@ -934,7 +979,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                         'Enter pin code sent to ${countryCode + phoneNoController.text}',
                         style: kInputStyle.copyWith(fontSize: 20, height: 1.5),
                         textAlign: TextAlign.center,
-                      ),
+                      ).tr(),
                       SizedBox(
                         height: MediaQuery.of(context).size.height * 0.07,
                       ),
@@ -1039,7 +1084,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                       fontSize: 20,
                     ),
                     textAlign: TextAlign.center,
-                  ),
+                  ).tr(),
                 ),
                 const SizedBox(height: 10),
                 Expanded(
@@ -1054,7 +1099,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                               selectedExpertise[index],
                               style:
                                   const TextStyle(fontFamily: 'CenturyGothic'),
-                            ),
+                            ).tr(),
                             deleteIconColor: Colors.red,
                             onSelected: (isSelected) {},
                             backgroundColor: Colors.white,
@@ -1088,7 +1133,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                               unSelectedExpertise[index],
                               style:
                                   const TextStyle(fontFamily: 'CenturyGothic'),
-                            ),
+                            ).tr(),
                             onTap: () {
                               selectedExpertise.add(unSelectedExpertise[index]);
                               ratesFieldsController
@@ -1111,7 +1156,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.35,
+                  width: MediaQuery.of(context).size.width * 0.4,
                   child: RectangularRoundedButton(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20.0,
@@ -1187,6 +1232,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
       logoImageUrl = null;
       shopImagesList.clear();
       formKey.currentState?.reset();
+      shopFormKey.currentState?.reset();
     });
   }
 

@@ -1,4 +1,5 @@
 import 'package:dresssew/main.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import 'constants.dart';
@@ -27,11 +28,13 @@ class RateInputField extends StatelessWidget {
             ? null
             : (val) {
                 if (val == null || val.isEmpty) {
-                  return isUrduActivated? "ایک قدر درج کریں":"enter a value";
+                  return isUrduActivated ? "ایک قدر درج کریں" : "enter a value";
                 }
                 return null;
               },
-        style: kInputStyle,
+        style: kInputStyle.copyWith(
+          locale: context.locale,
+        ),
         decoration: kTextFieldDecoration.copyWith(
           contentPadding:
               const EdgeInsets.symmetric(vertical: 2, horizontal: 10),
