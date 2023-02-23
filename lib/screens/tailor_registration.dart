@@ -13,6 +13,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
@@ -65,7 +66,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
   StitchingType? stitchingType;
   List<String> selectedExpertise = [];
   List<Rates> expertiseRatesList = [];
-  List<String> unSelectedExpertise = [];
+  Map<String, List<String>> unSelectedExpertise = {};
 
   final experienceController = TextEditingController();
   List<TextEditingController> ratesFieldsController = [];
@@ -75,6 +76,8 @@ class _TailorRegitrationState extends State<TailorRegistration> {
   bool isSavingDataInFirebase = false;
 
   final storage = FirebaseStorage.instance.ref();
+
+  int selectedUnselectedExpertiseCategoryIndex = -1;
 
   @override
   void initState() {
@@ -306,7 +309,8 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               }).then((value) {
                 if (taskSuccessful) {
                   if (widget.fromScreen == Login.id) {
-                    Navigator.pushReplacementNamed(context, Home.id);
+                    Future.delayed(Duration(milliseconds: 20)).then((value) =>
+                        Navigator.pushReplacementNamed(context, Home.id));
                   } else {
                     //1 inidicates it was a tailor registration & was successful
 
@@ -820,10 +824,11 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                 setState(() {
                   stitchingType = item;
                   unSelectedExpertise = stitchingType == StitchingType.gents
-                      ? List.from(menExpertise)
+                      ? {...menCategories}
                       : stitchingType == StitchingType.ladies
-                          ? List.from(ladiesExpertise)
-                          : List.from(overallExpertise);
+                          ? {...ladiesCategories}
+                          : {...overallCategories};
+
                   selectedExpertise.clear();
                   ratesFieldsController.clear();
                   expertiseRatesList.clear();
@@ -1098,20 +1103,24 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                             label: Text(
                               selectedExpertise[index],
                               style:
-                                  const TextStyle(fontFamily: 'CenturyGothic'),
+                                  kTextStyle.copyWith(locale: context.locale),
                             ).tr(),
                             deleteIconColor: Colors.red,
                             onSelected: (isSelected) {},
                             backgroundColor: Colors.white,
                             elevation: 1,
                             onDeleted: () {
-                              unSelectedExpertise.add(selectedExpertise[index]);
-                              unSelectedExpertise.sort();
-                              setState(() {});
-                              expertiseRatesList.removeWhere((e) =>
-                                  e.category == selectedExpertise[index]);
-                              ratesFieldsController.removeAt(index);
+                              String text = selectedExpertise[index];
                               selectedExpertise.removeAt(index);
+                              ratesFieldsController.removeAt(index);
+                              expertiseRatesList.removeAt(index);
+                              Fluttertoast.showToast(
+                                  msg: "removed $text.",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  backgroundColor: Colors.blue,
+                                  textColor: Colors.white,
+                                  fontSize: 16.0);
                               setState(() {});
                             },
                           ),
@@ -1122,34 +1131,96 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                         primary: false,
                         shrinkWrap: true,
                         itemCount: unSelectedExpertise.length,
-                        itemBuilder: (context, index) => Card(
-                          margin: const EdgeInsets.symmetric(
-                            vertical: 2,
-                            horizontal: 5,
-                          ),
-                          elevation: 1.0,
-                          child: ListTile(
-                            title: Text(
-                              unSelectedExpertise[index],
-                              style:
-                                  const TextStyle(fontFamily: 'CenturyGothic'),
-                            ).tr(),
-                            onTap: () {
-                              selectedExpertise.add(unSelectedExpertise[index]);
-                              ratesFieldsController
-                                  .add(TextEditingController(text: '0'));
-                              expertiseRatesList.add(Rates(
-                                  category: unSelectedExpertise[index],
-                                  price: 0));
-                              // expertiseRatesList.sort((n1, n2) {
-                              //   return n1.category.compareTo(n2.category);
-                              // });
-                              // selectedExpertise.sort();
-                              unSelectedExpertise.removeAt(index);
-                              setState(() {});
-                            },
-                          ),
-                        ),
+                        itemBuilder: (context, index) {
+                          final key = unSelectedExpertise.keys.elementAt(index);
+                          final value =
+                              unSelectedExpertise[key] as List<String>;
+                          return Card(
+                              margin: const EdgeInsets.symmetric(
+                                vertical: 2,
+                                horizontal: 5,
+                              ),
+                              elevation: 1.0,
+                              child: ExpansionTile(
+                                initiallyExpanded: index ==
+                                    selectedUnselectedExpertiseCategoryIndex,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                                title: Text(
+                                  key,
+                                  style: kInputStyle,
+                                ).tr(),
+                                children: [
+                                  ListView.builder(
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    primary: false,
+                                    shrinkWrap: true,
+                                    itemCount: value.length,
+                                    itemBuilder: (context, index2) => Card(
+                                      margin: const EdgeInsets.symmetric(
+                                        vertical: 2,
+                                        horizontal: 5,
+                                      ),
+                                      elevation: 1.0,
+                                      child: ListTile(
+                                        minLeadingWidth:
+                                            MediaQuery.of(context).size.width *
+                                                0.02,
+                                        leading: SizedBox(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.01,
+                                        ),
+                                        title: Text(
+                                          value[index2],
+                                          style: kTextStyle.copyWith(
+                                              locale: context.locale),
+                                        ).tr(),
+                                        trailing: const Icon(Icons.add),
+                                        onTap: () {
+                                          if (!selectedExpertise
+                                              .contains(value[index2])) {
+                                            selectedExpertise
+                                                .add(value[index2]);
+                                            ratesFieldsController
+                                                .add(TextEditingController());
+                                            expertiseRatesList.add(
+                                              Rates(
+                                                  category: value[index2],
+                                                  price: 0),
+                                            );
+                                          } else {
+                                            Fluttertoast.showToast(
+                                                msg:
+                                                    "${value[index2]} is already added.",
+                                                toastLength: Toast.LENGTH_SHORT,
+                                                gravity: ToastGravity.BOTTOM,
+                                                backgroundColor: Colors.blue,
+                                                textColor: Colors.white,
+                                                fontSize: 16.0);
+                                          }
+                                          if (mounted) setState(() {});
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                onExpansionChanged: (val) {
+                                  if (val) {
+                                    selectedUnselectedExpertiseCategoryIndex =
+                                        index;
+                                  } else {
+                                    selectedUnselectedExpertiseCategoryIndex =
+                                        -1;
+                                  }
+                                  if (mounted) {
+                                    setState(() {});
+                                  }
+                                },
+                              ));
+                        },
                       ),
                     ],
                   ),
@@ -1275,6 +1346,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
       (index) {
         return ItemRateInputTile(
             title: selectedExpertise[index],
+            suffixText: 'Rs',
             controller: ratesFieldsController[index],
             onChanged: (val) {
               setState(() {

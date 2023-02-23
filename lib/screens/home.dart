@@ -2,7 +2,6 @@ import 'package:dresssew/screens/login.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,11 +16,11 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    if(mounted){
-      setState(() {
-        
-      });
-    }
+    Future.delayed(Duration(milliseconds: 20)).then((value) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override

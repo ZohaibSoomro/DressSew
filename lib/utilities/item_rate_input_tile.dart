@@ -10,13 +10,14 @@ class ItemRateInputTile extends StatelessWidget {
   final Function(String?) onChanged;
   final TextEditingController controller;
   final bool validateField;
-
+  final String? suffixText;
   const ItemRateInputTile({
     super.key,
     this.validateField = true,
     required this.title,
     required this.onChanged,
     required this.controller,
+    this.suffixText,
   });
 
   @override
@@ -34,6 +35,7 @@ class ItemRateInputTile extends StatelessWidget {
             validateField: validateField,
             controller: controller,
             onChanged: onChanged,
+            suffixText: suffixText,
           ),
         ],
       ),

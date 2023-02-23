@@ -20,7 +20,7 @@ class RateInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.3,
+      width: MediaQuery.of(context).size.width * 0.32,
       child: TextFormField(
         controller: controller,
         textAlign: TextAlign.center,
@@ -38,10 +38,12 @@ class RateInputField extends StatelessWidget {
         decoration: kTextFieldDecoration.copyWith(
           contentPadding:
               const EdgeInsets.symmetric(vertical: 2, horizontal: 10),
-          hintStyle: kInputStyle.copyWith(fontSize: 12),
-          errorStyle: kInputStyle.copyWith(fontSize: 10),
+          hintStyle: kInputStyle.copyWith(fontSize: 12, locale: context.locale),
+          errorStyle:
+              kInputStyle.copyWith(fontSize: 10, locale: context.locale),
           suffixText: suffixText,
-          suffixStyle: kInputStyle.copyWith(fontSize: 12, color: Colors.grey),
+          suffixStyle: kInputStyle.copyWith(
+              fontSize: 12, color: Colors.grey, locale: context.locale),
         ),
         keyboardType: TextInputType.number,
         onChanged: onChanged,

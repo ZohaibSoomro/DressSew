@@ -36,6 +36,14 @@ class _LoginState extends State<Login> {
   final passwordController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration(milliseconds: 15)).then((value) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
   void dispose() {
     super.dispose();
     emailController.dispose();
