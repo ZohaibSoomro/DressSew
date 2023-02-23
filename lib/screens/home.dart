@@ -27,7 +27,8 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Welcome!', style: kInputStyle.copyWith(fontSize: 20)).tr(),
+        title: Text('Welcome dear!', style: kInputStyle.copyWith(fontSize: 20))
+            .tr(),
         actions: [
           IconButton(
             onPressed: () async {
