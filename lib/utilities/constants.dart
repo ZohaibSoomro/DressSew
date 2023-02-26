@@ -59,35 +59,40 @@ final overallExpertise = [
 ];
 
 final Map<String, List<String>> menCategories = {
-  "Tops": ["T-shirts", "Dress Shirts", "Sweaters"],
-  "Bottoms": ["Jeans", "Pants", "Shorts", "Pajamas"],
-  "Outwear": ["Jackets", "Coat", "Vests", "Blazers"],
-  "Suits": [
-    "Uniform",
-    "Business Suits",
-    "Two Piece Suits",
-    "Three Piece Suits",
-    "Shalwar Kameez"
+  "Formal": [
+    "Dress Shirts",
+    "Dress Pants",
+    "Two Piece",
+    "Three-Piece",
+    "Vase Coats",
+    "Coats",
+    "Shervaani"
   ],
-  "Accessories": ["Ties", "Hats"],
-  "More": ["Cultural Outfit", "Costumes"],
+  "Casual": ["Shalwar Kameez"],
+  "Cultural": ["Sindhi", "Punjabi", "Balochi", "Pakhtun"],
+  "Others": ["Costumes"],
 };
 
 final Map<String, List<String>> ladiesCategories = {
-  "Tops": ["T-shirts", "Blouses", "Sweaters"],
-  "Bottoms": ["Jeans", "Pants", "Shorts", "Skirts"],
-  "Outwear": ["Jackets", "Coat", "Vests", "Blazers"],
-  "Dresses": ["Frock", "Gowns", "Churidar"],
-  "Accessories": ["Scarves", "Hats"],
-  "More": ["Cultural Outfit", "Costumes"],
+  "Formal": [
+    "Lehanga",
+    "Frock",
+    "Ghaghra Choli",
+    "Gharara",
+    "Sharara",
+    "Maxi",
+    "Fishtail",
+    "Sari"
+  ],
+  "Casual": ["Kurti", "Shalwar Kameez", "Short Frock"],
+  "Cultural": ["Sindhi", "Punjabi", "Balochi", "Pakhtun"],
+  "Others": ["Costumes"],
 };
 
 final Map<String, List<String>> overallCategories = {
-  "Tops": ["Dress Shirts", ...?ladiesCategories["Tops"]],
-  "Bottoms": ["Jeans", "Pants", "Shorts", "Pajamas", "Skirts"],
-  "Outwear": [...?ladiesCategories["Outwear"]],
-  "Suits": [...?menCategories["Suits"]], //both are same
-  "Dresses": [...?ladiesCategories["Dresses"]],
-  "Accessories": ["Ties", ...?ladiesCategories["Accessories"]],
-  "More": [...?menCategories["More"]], //both are same
+  "Gents": [
+    ...?menCategories["Formal"],
+    ...?ladiesCategories["Formal"],
+  ],
+  "Ladies": [...?menCategories["Formal"]]
 };

@@ -1,11 +1,9 @@
 class Shop {
   String name;
   String address;
-  String? websiteUrl;
   String city;
   String country;
   int postalCode;
-  String? logoImageUrl;
   String? shopImage1Url;
   String? shopImage2Url;
   // Map<String, List<int>> shopImagesBytes;
@@ -14,12 +12,10 @@ class Shop {
     required this.address,
     required this.city,
     required this.name,
-    this.websiteUrl,
     this.country = "Pakistan",
     required this.postalCode,
     this.shopImage1Url,
     this.shopImage2Url,
-    this.logoImageUrl,
     // this.shopImagesBytes = const {},
   });
 
@@ -28,10 +24,8 @@ class Shop {
         address: json['address'],
         city: json['city'],
         name: json['name'],
-        websiteUrl: json['website_url'],
         country: json['country'],
         postalCode: json['postal_code'],
-        logoImageUrl: json['logo_url'],
         shopImage1Url: json['shop_image1_url'],
         shopImage2Url: json['shop_image2_url']);
     // shopImagesBytes: json['shop_images'] as Map<String, List<int>>);
@@ -42,9 +36,7 @@ class Shop {
         'address': address,
         'city': city,
         'country': country,
-        'website_url': websiteUrl,
         'postal_code': postalCode,
-        'logo_url': logoImageUrl,
         'shop_image1_url': shopImage1Url,
         'shop_image2_url': shopImage2Url,
         // 'shop_images': shopImagesBytes,

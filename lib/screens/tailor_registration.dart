@@ -5,6 +5,7 @@ import 'package:dresssew/models/app_user.dart';
 import 'package:dresssew/models/customer.dart';
 import 'package:dresssew/models/shop.dart';
 import 'package:dresssew/utilities/constants.dart';
+import 'package:dresssew/utilities/expandable_list_tile.dart';
 import 'package:dresssew/utilities/item_rate_input_tile.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
 import 'package:dresssew/utilities/rectangular_button.dart';
@@ -45,7 +46,6 @@ class _TailorRegitrationState extends State<TailorRegistration> {
   final shopFormKey = GlobalKey<FormState>();
   final phoneNoController = TextEditingController();
   String countryCode = '+92';
-  final websiteUrlController = TextEditingController();
   final shopNameController = TextEditingController();
   final shopAddressController = TextEditingController();
   final cityController = TextEditingController();
@@ -54,13 +54,13 @@ class _TailorRegitrationState extends State<TailorRegistration> {
   bool isVerifyingPhoneNumber = false;
   bool isNextBtnPressed = false;
   bool phoneNumberVerified = true;
-  bool isUploadingLogo = false;
+  // bool isUploadingLogo = false;
   bool isUploadingShop1Image = false;
   bool isUploadingShop2Image = false;
   bool isUploadingProfileImage = false;
   bool isRegisterBtnPressed = false;
   String? profileImageUrl;
-  String? logoImageUrl;
+  // String? logoImageUrl;
   List<String?> shopImagesList = [];
   String? initialImageUrl;
   StitchingType? stitchingType;
@@ -79,10 +79,21 @@ class _TailorRegitrationState extends State<TailorRegistration> {
 
   int selectedUnselectedExpertiseCategoryIndex = -1;
 
+  final nameController = TextEditingController(
+      text: FirebaseAuth.instance.currentUser?.displayName);
+
   @override
   void initState() {
     super.initState();
     initialImageUrl = 'assets/user.png';
+    if (widget.userData.name.isNotEmpty) {
+      nameController.text = widget.userData.name;
+    }
+    Future.delayed(Duration(milliseconds: 20)).then((value) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
     phoneNoController.addListener(() {
       if (mounted) {
         setState(() {});
@@ -94,8 +105,8 @@ class _TailorRegitrationState extends State<TailorRegistration> {
   void dispose() {
     super.dispose();
     phoneNoController.dispose();
-    websiteUrlController.dispose();
     experienceController.dispose();
+    nameController.dispose();
     shopAddressController.dispose();
     shopNameController.dispose();
     cityController.dispose();
@@ -198,15 +209,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
             textAlign: TextAlign.center,
           ).tr(),
           SizedBox(height: size.height * 0.02),
-          buildTextFormField(
-            isUrduActivated
-                ? 'ویب سائٹ کی لنک (اختیاری)'
-                : 'website url(optional)',
-            websiteUrlController,
-            FontAwesomeIcons.globe,
-            null,
-            keyboard: TextInputType.url,
-          ),
+
           buildTextFormField(
             isUrduActivated ? "دکان کا نام" : 'shop name',
             shopNameController,
@@ -234,7 +237,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
             isUrduActivated ? 'پوسٹل کوڈ درج کریں' : 'enter postal code',
             keyboard: TextInputType.number,
           ),
-          buildShopLogoContainer(size),
+          // buildShopLogoContainer(size),
           buildShopImagesContainer(size),
           SizedBox(height: size.height * 0.02),
           buildRegisterButton(),
@@ -255,8 +258,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
         }
         if (formKey.currentState!.validate() &&
             shopFormKey.currentState!.validate() &&
-            shopImagesList.length == 2 &&
-            logoImageUrl != null) {
+            shopImagesList.length == 2) {
           if (mounted) {
             setState(() {
               isRegisterBtnPressed = true;
@@ -272,14 +274,12 @@ class _TailorRegitrationState extends State<TailorRegistration> {
             }
           });
           Shop shop = Shop(
-            websiteUrl: websiteUrlController.text.trim(),
             address: shopAddressController.text.trim(),
             city: capitalizeText(cityController.text.trim()),
             name: capitalizeText(shopNameController.text.trim()),
             postalCode: int.parse(postalCodeController.text.trim()),
             shopImage1Url: shopImagesList[0],
             shopImage2Url: shopImagesList[1],
-            logoImageUrl: logoImageUrl!,
           );
           tailor!.shop = shop;
           try {
@@ -405,72 +405,72 @@ class _TailorRegitrationState extends State<TailorRegistration> {
     );
   }
 
-  Padding buildShopLogoContainer(Size size) {
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: SizedBox(
-        height: size.height * 0.22,
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  'Shop Logo',
-                  style: kInputStyle.copyWith(
-                    fontSize: 18,
-                  ),
-                ).tr(),
-                if (logoImageUrl == null && isRegisterBtnPressed)
-                  Flexible(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: Text("(Add your shop's logo)",
-                              style: kTextStyle.copyWith(
-                                  color: Colors.red, fontSize: 12))
-                          .tr(),
-                    ),
-                  )
-              ],
-            ),
-            SizedBox(height: size.height * 0.01),
-            Expanded(
-              child: logoImageUrl == null
-                  ? buildUploadImageContainer(
-                      size,
-                      isUploadingLogo,
-                      onPressed: () async {
-                        final file =
-                            await picker.pickImage(source: ImageSource.gallery);
-                        if (file != null) {
-                          setState(() {
-                            isUploadingLogo = true;
-                          });
-
-                          final storageRef = storage
-                              .child('${widget.userData.email}/logoUrl.png');
-                          final uploadTask =
-                              await storageRef.putFile(File(file.path));
-                          final downloadUrl =
-                              await uploadTask.ref.getDownloadURL();
-                          setState(() {
-                            logoImageUrl = downloadUrl;
-                            isUploadingLogo = false;
-                          });
-                        }
-                      },
-                    )
-                  : buildImageItem(size, logoImageUrl, onRemove: () {
-                      logoImageUrl = null;
-                      setState(() {});
-                    }),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Padding buildShopLogoContainer(Size size) {
+  //   return Padding(
+  //     padding: const EdgeInsets.all(10.0),
+  //     child: SizedBox(
+  //       height: size.height * 0.22,
+  //       child: Column(
+  //         children: [
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.start,
+  //             crossAxisAlignment: CrossAxisAlignment.end,
+  //             children: [
+  //               Text(
+  //                 'Shop Logo',
+  //                 style: kInputStyle.copyWith(
+  //                   fontSize: 18,
+  //                 ),
+  //               ).tr(),
+  //               if (isRegisterBtnPressed)
+  //                 Flexible(
+  //                   child: Padding(
+  //                     padding: const EdgeInsets.only(left: 8.0),
+  //                     child: Text("(Add your shop's logo)",
+  //                             style: kTextStyle.copyWith(
+  //                                 color: Colors.red, fontSize: 12))
+  //                         .tr(),
+  //                   ),
+  //                 )
+  //             ],
+  //           ),
+  //           SizedBox(height: size.height * 0.01),
+  //           Expanded(
+  //             child: logoImageUrl == null
+  //                 ? buildUploadImageContainer(
+  //                     size,
+  //                     isUploadingLogo,
+  //                     onPressed: () async {
+  //                       final file =
+  //                           await picker.pickImage(source: ImageSource.gallery);
+  //                       if (file != null) {
+  //                         setState(() {
+  //                           isUploadingLogo = true;
+  //                         });
+  //
+  //                         final storageRef = storage
+  //                             .child('${widget.userData.email}/logoUrl.png');
+  //                         final uploadTask =
+  //                             await storageRef.putFile(File(file.path));
+  //                         final downloadUrl =
+  //                             await uploadTask.ref.getDownloadURL();
+  //                         setState(() {
+  //                           logoImageUrl = downloadUrl;
+  //                           isUploadingLogo = false;
+  //                         });
+  //                       }
+  //                     },
+  //                   )
+  //                 : buildImageItem(size, logoImageUrl, onRemove: () {
+  //                     logoImageUrl = null;
+  //                     setState(() {});
+  //                   }),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget buildImageItem(size, String? url, {required VoidCallback onRemove}) =>
       Container(
@@ -530,6 +530,10 @@ class _TailorRegitrationState extends State<TailorRegistration> {
         SizedBox(height: size.width * 0.01),
         Align(alignment: Alignment.center, child: buildProfilePicture(size)),
         buildSelectProfileImageButton(size),
+        SizedBox(height: size.height * 0.01),
+        buildTextFormField(isUrduActivated ? 'نام' : 'Name', nameController,
+            null, isUrduActivated ? 'اپنا نام درج کریں' : "Enter your name",
+            keyboard: TextInputType.name),
         SizedBox(height: size.height * 0.01),
         buildGenderRow(),
         SizedBox(height: size.height * 0.01),
@@ -597,8 +601,9 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                     const Duration(seconds: 30),
                   ).then((value) => setState(() {
                         isUploadingProfileImage = false;
-                        if (!taskSuccessful)
+                        if (!taskSuccessful) {
                           showMyBanner(context, 'Timed out.');
+                        }
                       }));
                   final storageRef = storage
                       .child('${widget.userData.email}/profileImage.png');
@@ -706,9 +711,14 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               gender != null &&
               stitchingType != null &&
               selectedExpertise.isNotEmpty) {
+            if (profileImageUrl == null || profileImageUrl == initialImageUrl) {
+              showMyDialog(context, 'Error!', "add a profile picture.",
+                  disposeAfterMillis: 1500);
+              return;
+            }
             print("Validation successful");
             tailor = Tailor(
-              tailorName: capitalizeText(widget.userData.name),
+              tailorName: capitalizeText(nameController.text.trim()),
               email: widget.userData.email,
               userDocId: widget.userData.id,
               gender: gender!,
@@ -720,6 +730,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               rates: expertiseRatesList,
               experience: int.parse(experienceController.text.trim()),
             );
+            widget.userData.name = capitalizeText(nameController.text.trim());
             print("Rates: $expertiseRatesList");
             isNextBtnPressed = false;
           }
@@ -827,8 +838,10 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                       ? {...menCategories}
                       : stitchingType == StitchingType.ladies
                           ? {...ladiesCategories}
-                          : {...overallCategories};
-
+                          : {
+                              "Gents": ["yes"],
+                              "Ladies": ["Yes"]
+                            };
                   selectedExpertise.clear();
                   ratesFieldsController.clear();
                   expertiseRatesList.clear();
@@ -935,9 +948,12 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               : IconTheme(
                   data: const IconThemeData(color: Colors.black54),
                   child: Icon(icon, size: 18)),
-          hintText: hint,
-          hintStyle: kTextStyle.copyWith(fontSize: 13),
-          errorStyle: kTextStyle.copyWith(color: Colors.red),
+          // hintText: hint,
+          labelText: hint.substring(
+              0, hint.contains(" ") ? hint.indexOf(" ") : hint.length),
+          hintStyle: kTextStyle.copyWith(fontSize: 13, locale: context.locale),
+          errorStyle:
+              kTextStyle.copyWith(color: Colors.red, locale: context.locale),
         ),
         keyboardType: keyboard,
       ),
@@ -1126,102 +1142,61 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                           ),
                         ),
                       ),
-                      ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        primary: false,
-                        shrinkWrap: true,
-                        itemCount: unSelectedExpertise.length,
-                        itemBuilder: (context, index) {
-                          final key = unSelectedExpertise.keys.elementAt(index);
-                          final value =
-                              unSelectedExpertise[key] as List<String>;
-                          return Card(
-                              margin: const EdgeInsets.symmetric(
-                                vertical: 2,
-                                horizontal: 5,
-                              ),
-                              elevation: 1.0,
-                              child: ExpansionTile(
-                                initiallyExpanded: index ==
-                                    selectedUnselectedExpertiseCategoryIndex,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                                title: Text(
-                                  key,
-                                  style: kInputStyle,
-                                ).tr(),
-                                children: [
-                                  ListView.builder(
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    primary: false,
-                                    shrinkWrap: true,
-                                    itemCount: value.length,
-                                    itemBuilder: (context, index2) => Card(
-                                      margin: const EdgeInsets.symmetric(
-                                        vertical: 2,
-                                        horizontal: 5,
-                                      ),
-                                      elevation: 1.0,
-                                      child: ListTile(
-                                        minLeadingWidth:
-                                            MediaQuery.of(context).size.width *
-                                                0.02,
-                                        leading: SizedBox(
-                                          width: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.01,
-                                        ),
-                                        title: Text(
-                                          value[index2],
-                                          style: kTextStyle.copyWith(
-                                              locale: context.locale),
-                                        ).tr(),
-                                        trailing: const Icon(Icons.add),
-                                        onTap: () {
-                                          if (!selectedExpertise
-                                              .contains(value[index2])) {
-                                            selectedExpertise
-                                                .add(value[index2]);
-                                            ratesFieldsController
-                                                .add(TextEditingController());
-                                            expertiseRatesList.add(
-                                              Rates(
-                                                  category: value[index2],
-                                                  price: 0),
-                                            );
-                                          } else {
-                                            Fluttertoast.showToast(
-                                                msg:
-                                                    "${value[index2]} is already added.",
-                                                toastLength: Toast.LENGTH_SHORT,
-                                                gravity: ToastGravity.BOTTOM,
-                                                backgroundColor: Colors.blue,
-                                                textColor: Colors.white,
-                                                fontSize: 16.0);
-                                          }
-                                          if (mounted) setState(() {});
-                                        },
-                                      ),
-                                    ),
+                      unSelectedExpertise.length == 2
+                          ? Column(
+                              children: [
+                                ExpansionTile(
+                                  title: Text(
+                                    "Gents",
+                                    style: kInputStyle.copyWith(
+                                        locale: context.locale),
                                   ),
-                                ],
-                                onExpansionChanged: (val) {
-                                  if (val) {
-                                    selectedUnselectedExpertiseCategoryIndex =
-                                        index;
-                                  } else {
-                                    selectedUnselectedExpertiseCategoryIndex =
-                                        -1;
-                                  }
-                                  if (mounted) {
-                                    setState(() {});
-                                  }
-                                },
-                              ));
-                        },
-                      ),
+                                  children: List.generate(
+                                    menCategories.length,
+                                    (index) {
+                                      final key =
+                                          menCategories.keys.elementAt(index);
+                                      final value =
+                                          menCategories[key] as List<String>;
+                                      return buildGentsLadiesCategoriesCard(
+                                          key, value, index, setState);
+                                    },
+                                  ),
+                                ),
+                                ExpansionTile(
+                                  title: Text(
+                                    "Ladies",
+                                    style: kInputStyle.copyWith(
+                                        locale: context.locale),
+                                  ),
+                                  children: List.generate(
+                                    ladiesCategories.length,
+                                    (index) {
+                                      final key = ladiesCategories.keys
+                                          .elementAt(index);
+                                      final value =
+                                          ladiesCategories[key] as List<String>;
+                                      return buildGentsLadiesCategoriesCard(
+                                          key, value, index, setState);
+                                    },
+                                  ),
+                                ),
+                              ],
+                            )
+                          : ListView.builder(
+                              physics: const NeverScrollableScrollPhysics(),
+                              primary: false,
+                              shrinkWrap: true,
+                              itemCount: unSelectedExpertise.length,
+                              itemBuilder: (context, index) {
+                                final key =
+                                    unSelectedExpertise.keys.elementAt(index);
+                                final value =
+                                    unSelectedExpertise[key] as List<String>;
+                                return buildGentsLadiesCategoriesCard(
+                                    key, value, index, setState);
+                              },
+                            ),
                     ],
                   ),
                 ),
@@ -1247,6 +1222,33 @@ class _TailorRegitrationState extends State<TailorRegistration> {
       }),
     );
     setState(() {});
+  }
+
+  ExpandableListTile buildGentsLadiesCategoriesCard(
+      String key, List<String> value, int index, StateSetter setState) {
+    return ExpandableListTile(
+      listTitle: key,
+      childList: value,
+      initiallyExpanded: index == selectedUnselectedExpertiseCategoryIndex,
+      onChildListItemPressed: (String itemValue) {
+        if (!selectedExpertise.contains(itemValue)) {
+          selectedExpertise.add(itemValue);
+          ratesFieldsController.add(TextEditingController());
+          expertiseRatesList.add(
+            Rates(category: itemValue, price: 0),
+          );
+        } else {
+          Fluttertoast.showToast(
+              msg: "$itemValue is already added.",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: Colors.blue,
+              textColor: Colors.white,
+              fontSize: 16.0);
+        }
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   buildUploadImageContainer(size, bool isUploading,
@@ -1291,16 +1293,16 @@ class _TailorRegitrationState extends State<TailorRegistration> {
       stitchingType = null;
       gender = null;
       profileImageUrl = initialImageUrl;
-      websiteUrlController.clear();
       shopNameController.clear();
       experienceController.clear();
+      nameController.clear();
       postalCodeController.clear();
       cityController.clear();
       shopAddressController.clear();
       customizesDresses = false;
       selectedExpertise.clear();
       unSelectedExpertise.clear();
-      logoImageUrl = null;
+      // logoImageUrl = null;
       shopImagesList.clear();
       formKey.currentState?.reset();
       shopFormKey.currentState?.reset();
