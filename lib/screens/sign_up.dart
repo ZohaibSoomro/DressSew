@@ -373,6 +373,7 @@ class _SignUpState extends State<SignUp> {
                           ],
                         ),
                         const SizedBox(height: 20),
+                        //sign in with google
                         Card(
                           elevation: 5.0,
                           shape: RoundedRectangleBorder(
@@ -387,14 +388,11 @@ class _SignUpState extends State<SignUp> {
                                 final userCredentials = await FirebaseAuth
                                     .instance
                                     .signInWithProvider(GoogleAuthProvider());
-                                setState(() {
-                                  isLoading = false;
-                                });
-
                                 if (userCredentials.user != null) {
                                   final userData = AppUser(
                                     name: userCredentials.user!.displayName ??
                                         userCredentials.user!.email!.substring(
+                                            0,
                                             userCredentials.user!.email!
                                                 .indexOf("@")),
                                     email: userCredentials.user!.email!,
@@ -448,6 +446,8 @@ class _SignUpState extends State<SignUp> {
                                   );
                                 }
                                 print("Sign up exception: ${e.code}");
+                              } catch (e) {
+                                print('Execption: $e');
                               }
                               setState(() {
                                 isLoading = false;

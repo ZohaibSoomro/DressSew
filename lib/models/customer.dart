@@ -12,6 +12,7 @@ class Customer {
   String? address;
   String? userDocId;
   List<Measurement> measurements;
+  MeasurementChoice measurementChoice;
 
   Customer({
     this.id,
@@ -22,6 +23,7 @@ class Customer {
     this.userDocId,
     this.profileImageUrl,
     this.address,
+    this.measurementChoice = MeasurementChoice.online,
     this.phoneNumber,
     this.measurements = const [],
   });
@@ -34,6 +36,7 @@ class Customer {
         'gender': gender?.name,
         'orders': orders.map((e) => e.toJson()).toList(),
         'phone_number': phoneNumber,
+        'measurement_choice': measurementChoice.name,
         'address': address,
         'measurements': measurements.map((e) => e.toJson()).toList(),
         'profile_image_url': profileImageUrl,
@@ -44,6 +47,7 @@ class Customer {
         name: json['name'],
         gender: json['gender'] != null ? getGender(json['gender']) : null,
         email: json['email'],
+        measurementChoice: getMeasurementChoice(json['measurement_choice']),
         profileImageUrl: json['profile_image_url'],
         id: json['id'],
         userDocId: json['user_doc_id'],

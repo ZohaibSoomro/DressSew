@@ -25,39 +25,6 @@ const kTextFieldDecoration = InputDecoration(
   ),
 );
 
-const ladiesExpertise = [
-  "Blouse",
-  "Sweater",
-  "Trouser Shirt",
-  "Gowns",
-  "Cultural outfit",
-  "Churidar",
-  "Frock",
-  "Costumes",
-  "Coats"
-];
-const menExpertise = [
-  "Suits",
-  "Uniforms",
-  "Cultural outfit",
-  "Trouser Shirt",
-  "Coats",
-  "WaistCoat",
-  "Shalwar Kameez",
-  "Casual",
-  "Costumes",
-  "Party wear"
-];
-final overallExpertise = [
-  "Casual",
-  "Traditional",
-  "Formal",
-  "Party wear",
-  "Costumes",
-  ...menExpertise,
-  ...ladiesExpertise
-];
-
 final Map<String, List<String>> menCategories = {
   "Formal": [
     "Dress Shirts",
@@ -87,12 +54,4 @@ final Map<String, List<String>> ladiesCategories = {
   "Casual": ["Kurti", "Shalwar Kameez", "Short Frock"],
   "Cultural": ["Sindhi", "Punjabi", "Balochi", "Pakhtun"],
   "Others": ["Costumes"],
-};
-
-final Map<String, List<String>> overallCategories = {
-  "Gents": [
-    ...?menCategories["Formal"],
-    ...?ladiesCategories["Formal"],
-  ],
-  "Ladies": [...?menCategories["Formal"]]
 };

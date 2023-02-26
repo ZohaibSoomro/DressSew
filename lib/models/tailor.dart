@@ -1,3 +1,4 @@
+import 'package:dresssew/models/measurement.dart';
 import 'package:dresssew/models/shop.dart';
 
 class Tailor {
@@ -154,4 +155,13 @@ enum Gender { male, female }
 Gender getGender(String type) {
   Gender gender = type == Gender.male.name ? Gender.male : Gender.female;
   return gender;
+}
+
+MeasurementChoice getMeasurementChoice(String type) {
+  MeasurementChoice measurementChoice = type == MeasurementChoice.physical.name
+      ? MeasurementChoice.physical
+      : type == MeasurementChoice.online.name
+          ? MeasurementChoice.online
+          : MeasurementChoice.viaAgent;
+  return measurementChoice;
 }

@@ -53,6 +53,9 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
   String? profileImageUrl;
   String? initialImageUrl;
 
+  final nameController = TextEditingController(
+      text: FirebaseAuth.instance.currentUser?.displayName);
+
   bool isSavingDataInFirebase = false;
 
   final storage = FirebaseStorage.instance.ref();
@@ -67,10 +70,20 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
   final measurementsControllers = List.generate(
       measurementImages.length, (index) => TextEditingController(text: '0'));
 
+  MeasurementChoice? measurementChoice;
+
   @override
   void initState() {
     super.initState();
     initialImageUrl = 'assets/user.png';
+    if (widget.userData.name.isNotEmpty) {
+      nameController.text = widget.userData.name;
+    }
+    Future.delayed(const Duration(milliseconds: 20)).then((value) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
     phoneNoController.addListener(() {
       if (mounted) {
         setState(() {});
@@ -83,6 +96,8 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
     super.dispose();
     phoneNoController.dispose();
     addressController.dispose();
+    nameController.dispose();
+
     measurementsControllers.forEach((element) {
       element.dispose();
     });
@@ -133,8 +148,11 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                           buildPhoneNumberVerificationPage(size),
                         if (phoneNumberVerified && customer == null)
                           buildPersonalInfoColumn(context),
-                        if (phoneNumberVerified && customer != null)
-                          buildAddMeasurementsPage(),
+                        if (measurementChoice == null)
+                          if (phoneNumberVerified &&
+                              customer != null &&
+                              measurementChoice == MeasurementChoice.online)
+                            buildAddMeasurementsPage(),
                       ],
                     ),
                   ),
@@ -186,7 +204,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
             });
           }
           //62 seconds as timeout
-          Future.delayed(Duration(seconds: 60, milliseconds: 2000))
+          Future.delayed(const Duration(seconds: 60, milliseconds: 2000))
               .then((value) {
             if (mounted) {
               setState(() => isSavingDataInFirebase = false);
@@ -279,7 +297,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
               padding: const EdgeInsets.all(5),
               child: InkWell(
                 onTap: onRemove,
-                child: CircleAvatar(
+                child: const CircleAvatar(
                   radius: 12,
                   backgroundColor: Colors.white,
                   child: Icon(
@@ -319,6 +337,10 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
         SizedBox(height: size.width * 0.01),
         Align(alignment: Alignment.center, child: buildProfilePicture(size)),
         buildSelectProfileImageButton(size),
+        SizedBox(height: size.height * 0.01),
+        buildTextFormField(isUrduActivated ? 'نام' : 'Name', nameController,
+            null, isUrduActivated ? 'اپنا نام درج کریں' : "Enter your name",
+            keyboard: TextInputType.name),
         SizedBox(height: size.height * 0.01),
         buildGenderRow(),
         SizedBox(height: size.height * 0.01),
@@ -363,7 +385,11 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
       child: RectangularRoundedButton(
         padding: EdgeInsets.zero,
         fontSize: 15,
-        buttonName: 'Select',
+        buttonName: profileImageUrl == null ||
+                isUploadingProfileImage ||
+                profileImageUrl == initialImageUrl
+            ? 'Select'
+            : "Change",
         onPressed: isUploadingProfileImage
             ? null
             : () async {
@@ -379,12 +405,14 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                   Future.delayed(
                     const Duration(seconds: 30),
                   ).then((value) {
-                    if (mounted)
+                    if (mounted) {
                       setState(() {
                         isUploadingProfileImage = false;
-                        if (!taskSuccessful)
+                        if (!taskSuccessful) {
                           showMyBanner(context, 'Timed out.');
+                        }
                       });
+                    }
                   });
                   final storageRef = storage
                       .child('${widget.userData.email}/profileImage.png');
@@ -413,9 +441,16 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
             if (formKey.currentState!.validate() &&
                 gender != null &&
                 !isUploadingProfileImage) {
+              if (profileImageUrl == null ||
+                  profileImageUrl == initialImageUrl) {
+                showMyDialog(context, 'Error!', "add a profile picture.",
+                    disposeAfterMillis: 1500);
+                return;
+              }
               print("Validation successful");
               customer = Customer(
-                name: capitalizeText(widget.userData.name),
+                measurementChoice: measurementChoice!,
+                name: capitalizeText(nameController.text.trim()),
                 email: widget.userData.email,
                 gender: gender!,
                 phoneNumber: countryCode + phoneNoController.text,
@@ -423,6 +458,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                 userDocId: widget.userData.id,
                 address: capitalizeText(addressController.text.trim()),
               );
+              widget.userData.name = capitalizeText(nameController.text.trim());
               print("customer data: $customer");
               isNextBtnPressed = false;
             }
@@ -442,6 +478,24 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
       }
     }
     return str;
+  }
+
+  Container buildMeasurementChoiceSelectionPage(Size size) {
+    return Container(
+      margin: EdgeInsets.only(top: size.height * 0.2),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Choose Measurement Option.',
+            style: kTitleStyle.copyWith(fontSize: 25),
+            textAlign: TextAlign.center,
+          ).tr(),
+          SizedBox(height: size.height * 0.01),
+          Text('Hello Guys'),
+        ],
+      ),
+    );
   }
 
   Container buildPhoneNumberVerificationPage(Size size) {
@@ -557,7 +611,9 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
               : IconTheme(
                   data: const IconThemeData(color: Colors.black54),
                   child: Icon(icon, size: 18)),
-          hintText: hint,
+          // hintText: hint,
+          labelText: hint.substring(
+              0, hint.contains(" ") ? hint.indexOf(" ") : hint.length),
           hintStyle: kTextStyle.copyWith(fontSize: 13),
           errorStyle: kTextStyle.copyWith(color: Colors.red),
         ),
@@ -689,8 +745,10 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
     setState(() {
       isNextBtnPressed = false;
       gender = null;
+      measurementChoice = MeasurementChoice.online;
       profileImageUrl = initialImageUrl;
       addressController.clear();
+      nameController.clear();
       measurementsControllers.forEach((element) {
         element.clear();
       });
@@ -745,7 +803,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                             child: Image.asset(
                                 measurementImages.values.elementAt(i)))),
                   ),
-                  SizedBox(),
+                  const SizedBox(),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisSize: MainAxisSize.min,

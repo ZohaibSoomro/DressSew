@@ -89,7 +89,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
     if (widget.userData.name.isNotEmpty) {
       nameController.text = widget.userData.name;
     }
-    Future.delayed(Duration(milliseconds: 20)).then((value) {
+    Future.delayed(const Duration(milliseconds: 20)).then((value) {
       if (mounted) {
         setState(() {});
       }
@@ -209,7 +209,6 @@ class _TailorRegitrationState extends State<TailorRegistration> {
             textAlign: TextAlign.center,
           ).tr(),
           SizedBox(height: size.height * 0.02),
-
           buildTextFormField(
             isUrduActivated ? "دکان کا نام" : 'shop name',
             shopNameController,
@@ -266,7 +265,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
             });
           }
           //62 seconds as timeout
-          Future.delayed(Duration(seconds: 60, milliseconds: 2000))
+          Future.delayed(const Duration(seconds: 60, milliseconds: 2000))
               .then((value) {
             if (mounted) {
               setState(() => isSavingDataInFirebase = false);
@@ -309,8 +308,9 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               }).then((value) {
                 if (taskSuccessful) {
                   if (widget.fromScreen == Login.id) {
-                    Future.delayed(Duration(milliseconds: 20)).then((value) =>
-                        Navigator.pushReplacementNamed(context, Home.id));
+                    Future.delayed(const Duration(milliseconds: 20)).then(
+                        (value) =>
+                            Navigator.pushReplacementNamed(context, Home.id));
                   } else {
                     //1 inidicates it was a tailor registration & was successful
 
@@ -491,7 +491,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               padding: const EdgeInsets.all(5),
               child: InkWell(
                 onTap: onRemove,
-                child: CircleAvatar(
+                child: const CircleAvatar(
                   radius: 12,
                   backgroundColor: Colors.white,
                   child: Icon(
@@ -586,7 +586,10 @@ class _TailorRegitrationState extends State<TailorRegistration> {
       child: RectangularRoundedButton(
         padding: EdgeInsets.zero,
         fontSize: 15,
-        buttonName: 'Select',
+        buttonName:
+            isUploadingProfileImage || profileImageUrl == initialImageUrl
+                ? 'Select'
+                : "Change",
         onPressed: isUploadingProfileImage
             ? null
             : () async {
@@ -773,7 +776,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(30.0),
-        side: BorderSide(
+        side: const BorderSide(
           color: Colors.grey,
           width: 0.3,
         ),
@@ -815,7 +818,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
             child: DropdownButton<StitchingType>(
               value: stitchingType,
               borderRadius: BorderRadius.circular(10),
-              icon: Icon(FontAwesomeIcons.chevronDown, size: 15),
+              icon: const Icon(FontAwesomeIcons.chevronDown, size: 15),
               isDense: true,
               isExpanded: true,
               style: kTextStyle.copyWith(fontSize: 15),
@@ -1098,7 +1101,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
             child: Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: Text(
                     'Expertise',
                     style: kInputStyle.copyWith(
@@ -1260,7 +1263,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
-              BoxShadow(
+              const BoxShadow(
                   blurRadius: 2, offset: Offset(1, 1), color: Colors.grey),
             ],
           ),
@@ -1271,7 +1274,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                     child: LoadingOverlay(
                         isLoading: true,
                         progressIndicator: buildLoadingSpinner(),
-                        child: Text('')),
+                        child: const Text('')),
                   ),
                 )
               : IconButton(

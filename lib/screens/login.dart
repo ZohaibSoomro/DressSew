@@ -10,6 +10,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -277,8 +278,141 @@ class _LoginState extends State<Login> {
                             },
                           ),
                           const SizedBox(
-                            height: 16,
+                            height: 20,
                           ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Flexible(
+                                child: Divider(
+                                  height: 1,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Text('Or', style: kTextStyle).tr(),
+                              ),
+                              Flexible(
+                                child: Divider(
+                                  height: 1,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          //sign in with google
+                          Card(
+                            elevation: 5.0,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(60)),
+                            //margin: EdgeInsets.symmetric(horizontal: 20),
+                            child: InkWell(
+                              onTap: () async {
+                                try {
+                                  setState(() {
+                                    isLoading = true;
+                                  });
+                                  final userCredentials = await FirebaseAuth
+                                      .instance
+                                      .signInWithProvider(GoogleAuthProvider());
+                                  if (userCredentials.user != null) {
+                                    final userData = await FirebaseFirestore
+                                        .instance
+                                        .collection("users")
+                                        .where("email",
+                                            isEqualTo:
+                                                userCredentials.user!.email)
+                                        .get();
+                                    await showMyDialog(
+                                        context, 'Info.', "Login Successful.",
+                                        isError: false);
+                                    if (mounted) {
+                                      setState(() {
+                                        isLoading = false;
+                                      });
+                                    }
+                                    print(
+                                        "Going to register as customer frrom google sign in");
+                                    final appUser = AppUser.fromJson(
+                                        userData.docs.first.data());
+                                    //if is not registered as customer or tailor but just has created account
+                                    if (!appUser.isRegistered) {
+                                      //if not registered as tailor but creaed account as  tialor
+                                      if (appUser.isTailor) {
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                TailorRegistration(
+                                                    userData: appUser),
+                                          ),
+                                        );
+                                      }
+                                      //if not registered as customer but created account as customer
+                                      else {
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                CustomerRegistration(
+                                                    userData: appUser),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                    //if already registered.
+                                    else {
+                                      Navigator.pushReplacementNamed(
+                                          context, Home.id);
+                                    }
+                                  } else {
+                                    showMyBanner(
+                                        context, "account creation failed.");
+                                  }
+                                } on FirebaseAuthException catch (e) {
+                                  if (e.code == "email-already-in-use") {
+                                    showMyDialog(
+                                      context,
+                                      'Sign up error!',
+                                      'This email is already in use. Try a different one.',
+                                      disposeAfterMillis: 2500,
+                                    );
+                                  }
+                                  print("Login exception: ${e.code}");
+                                } catch (e) {
+                                  print('Execption: $e');
+                                }
+                                setState(() {
+                                  isLoading = false;
+                                });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(6),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const CircleAvatar(
+                                      backgroundColor: Colors.transparent,
+                                      child: Icon(
+                                        FontAwesomeIcons.google,
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                    Flexible(
+                                      child: Text(
+                                        'Login with Google',
+                                        style:
+                                            kTextStyle.copyWith(fontSize: 18),
+                                      ).tr(),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
