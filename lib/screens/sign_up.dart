@@ -299,6 +299,7 @@ class _SignUpState extends State<SignUp> {
                                     });
                                   }
                                   print("Going to register");
+                                  Navigator.pop(context);
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
@@ -488,7 +489,7 @@ class _SignUpState extends State<SignUp> {
                 child: Padding(
                   padding: const EdgeInsets.all(5),
                   child: buildTranslateButton(context, onTranslated: () {
-                    setState(() {});
+                    if (mounted) setState(() {});
                   }),
                 )),
           ]),

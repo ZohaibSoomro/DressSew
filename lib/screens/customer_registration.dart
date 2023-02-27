@@ -72,6 +72,10 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
 
   MeasurementChoice? measurementChoice;
 
+  bool measurementChoiceSelected = false;
+
+  bool measurementsNextButtonPressed = false;
+
   @override
   void initState() {
     super.initState();
@@ -148,11 +152,17 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                           buildPhoneNumberVerificationPage(size),
                         if (phoneNumberVerified && customer == null)
                           buildPersonalInfoColumn(context),
-                        if (measurementChoice == null)
-                          if (phoneNumberVerified &&
-                              customer != null &&
-                              measurementChoice == MeasurementChoice.online)
-                            buildAddMeasurementsPage(),
+                        if (phoneNumberVerified &&
+                            customer != null &&
+                            (measurementChoiceSelected == false ||
+                                measurementsNextButtonPressed == false))
+                          buildMeasurementChoiceSelectionPage(size),
+                        if (phoneNumberVerified &&
+                            customer != null &&
+                            measurementChoice == MeasurementChoice.online &&
+                            measurementChoiceSelected &&
+                            measurementsNextButtonPressed)
+                          buildAddMeasurementsPage(),
                       ],
                     ),
                   ),
@@ -189,93 +199,94 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
   RectangularRoundedButton buildRegisterButton() {
     return RectangularRoundedButton(
       buttonName: 'Register',
-      onPressed: () async {
-        bool taskSuccessful = false;
-        if (mounted) {
-          setState(() {
-            isRegisterBtnPressed = true;
-          });
-        }
-        if (formKey.currentState!.validate()) {
-          if (mounted) {
-            setState(() {
-              isRegisterBtnPressed = true;
-              isSavingDataInFirebase = true;
-            });
-          }
-          //62 seconds as timeout
-          Future.delayed(const Duration(seconds: 60, milliseconds: 2000))
-              .then((value) {
-            if (mounted) {
-              setState(() => isSavingDataInFirebase = false);
-              if (!taskSuccessful) showMyBanner(context, 'Timed out.');
-            }
-          });
-          customer!.measurements = measurements;
-          print('customer: $customer');
-          try {
-            //inserting customer data
-            await FirebaseFirestore.instance
-                .collection('customers')
-                .add(customer!.toJson())
-                .then((doc) {
-              customer!.id = doc.id;
-              customer!.userDocId = widget.userData.id;
-              //update display user name
-              FirebaseAuth.instance.currentUser!
-                  .updateDisplayName(widget.userData.name)
-                  .then((value) => print('Display name updated.'));
-              //updating customer id field
-              doc.update(customer!.toJson()).then((value) {
-                widget.userData.isRegistered = true;
-                if (mounted) {
-                  setState(() {
-                    taskSuccessful = true;
-                  });
-                }
-                //updating corresponding app user record in users collection
-                doc.update(customer!.toJson()).then((value) {
-                  widget.userData.isRegistered = true;
-                  widget.userData.customerOrTailorId = doc.id;
-                  FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(widget.userData.id)
-                      .update(widget.userData.toJson());
-                  print("customer's user Data updated");
-                }).then((value) {
-                  if (taskSuccessful) {
-                    if (widget.fromScreen == Login.id) {
-                      Navigator.pushReplacementNamed(context, Home.id);
-                    } else {
-                      //1 inidicates it was a customer registration & was successful
-                      if (mounted) {
-                        setState(() {
-                          isRegisterBtnPressed = false;
-                          isSavingDataInFirebase = false;
-                        });
-                      }
-                      FirebaseAuth.instance
-                          .signOut()
-                          .then((value) => SharedPreferences.getInstance().then(
-                              (pref) =>
-                                  pref.setBool(Login.isLoggedInText, false)))
-                          .then((value) => showMyDialog(context, 'Success',
-                                  'Customer registration successful.',
-                                  isError: false, disposeAfterMillis: 1200)
-                              .then((value) => Navigator.pop(context, 1)));
-                    }
-                  }
-                });
-              });
-            });
-          } catch (e) {
-            print('Exception while saving in customer registration: $e');
-          }
-          onClearButtonPressed();
-          print('Customer data: ${customer!.toJson().toString()}');
-        }
-      },
+      onPressed: onRegisterButtonPressed,
     );
+  }
+
+  onRegisterButtonPressed() async {
+    bool taskSuccessful = false;
+    if (mounted) {
+      setState(() {
+        isRegisterBtnPressed = true;
+      });
+    }
+    if (formKey.currentState!.validate()) {
+      if (mounted) {
+        setState(() {
+          isRegisterBtnPressed = true;
+          isSavingDataInFirebase = true;
+        });
+      }
+      //62 seconds as timeout
+      Future.delayed(const Duration(seconds: 60, milliseconds: 2000))
+          .then((value) {
+        if (mounted) {
+          setState(() => isSavingDataInFirebase = false);
+          if (!taskSuccessful) showMyBanner(context, 'Timed out.');
+        }
+      });
+      customer!.measurements = measurements;
+      print('customer: $customer');
+      try {
+        //inserting customer data
+        await FirebaseFirestore.instance
+            .collection('customers')
+            .add(customer!.toJson())
+            .then((doc) {
+          customer!.id = doc.id;
+          customer!.userDocId = widget.userData.id;
+          //update display user name
+          FirebaseAuth.instance.currentUser!
+              .updateDisplayName(widget.userData.name)
+              .then((value) => print('Display name updated.'));
+          //updating customer id field
+          doc.update(customer!.toJson()).then((value) {
+            widget.userData.isRegistered = true;
+            if (mounted) {
+              setState(() {
+                taskSuccessful = true;
+              });
+            }
+            //updating corresponding app user record in users collection
+            doc.update(customer!.toJson()).then((value) {
+              widget.userData.isRegistered = true;
+              widget.userData.customerOrTailorId = doc.id;
+              FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(widget.userData.id)
+                  .update(widget.userData.toJson());
+              print("customer's user Data updated");
+            }).then((value) {
+              if (taskSuccessful) {
+                if (widget.fromScreen == Login.id) {
+                  Navigator.pushReplacementNamed(context, Home.id);
+                } else {
+                  //1 inidicates it was a customer registration & was successful
+                  if (mounted) {
+                    setState(() {
+                      isRegisterBtnPressed = false;
+                      isSavingDataInFirebase = false;
+                    });
+                  }
+                  FirebaseAuth.instance
+                      .signOut()
+                      .then((value) => SharedPreferences.getInstance().then(
+                          (pref) => pref.setBool(Login.isLoggedInText, false)))
+                      .then((value) => showMyDialog(context, 'Success',
+                              'Customer registration successful.',
+                              isError: false, disposeAfterMillis: 1200)
+                          .then((value) => Navigator.pop(context, 1)));
+                }
+              }
+            });
+          });
+        });
+      } catch (e) {
+        print('Exception while saving in customer registration: $e');
+      }
+      onClearButtonPressed();
+      print('Customer data: ${customer!.toJson().toString()}');
+    }
   }
 
   Widget buildImageItem(size, String? url, {required VoidCallback onRemove}) =>
@@ -418,6 +429,9 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                       .child('${widget.userData.email}/profileImage.png');
                   final uploadTask = await storageRef.putFile(File(file.path));
                   final downloadUrl = await uploadTask.ref.getDownloadURL();
+                  FirebaseAuth.instance.currentUser
+                      ?.updatePhotoURL(downloadUrl)
+                      .then((value) => print("Photo url updated."));
                   if (mounted) {
                     setState(() {
                       profileImageUrl = downloadUrl;
@@ -449,7 +463,6 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
               }
               print("Validation successful");
               customer = Customer(
-                measurementChoice: measurementChoice!,
                 name: capitalizeText(nameController.text.trim()),
                 email: widget.userData.email,
                 gender: gender!,
@@ -484,15 +497,77 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
     return Container(
       margin: EdgeInsets.only(top: size.height * 0.2),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
             'Choose Measurement Option.',
             style: kTitleStyle.copyWith(fontSize: 25),
             textAlign: TextAlign.center,
           ).tr(),
-          SizedBox(height: size.height * 0.01),
-          Text('Hello Guys'),
+          SizedBox(height: size.height * 0.02),
+          RadioListTile<MeasurementChoice>(
+            contentPadding: EdgeInsets.symmetric(
+                vertical: size.height * 0.008, horizontal: size.width * 0.008),
+            title: Text(
+              'Online Submission',
+              style: kInputStyle.copyWith(locale: context.locale),
+            ).tr(),
+            subtitle: Text(
+              'I will submit measurements online.',
+              style: kTextStyle.copyWith(locale: context.locale, fontSize: 12),
+            ).tr(),
+            value: MeasurementChoice.online,
+            groupValue: measurementChoice,
+            onChanged: (val) {
+              setState(() {
+                measurementChoiceSelected = true;
+                measurementChoice = val;
+              });
+            },
+          ),
+          RadioListTile<MeasurementChoice>(
+            contentPadding: EdgeInsets.symmetric(
+                vertical: size.height * 0.008, horizontal: size.width * 0.008),
+            title: Text(
+              'Physical Measurements',
+              style: kInputStyle.copyWith(locale: context.locale),
+            ).tr(),
+            subtitle: Text(
+              "I will come to tailor's shop to submit measurements.",
+              style: kTextStyle.copyWith(locale: context.locale, fontSize: 12),
+            ).tr(),
+            value: MeasurementChoice.physical,
+            groupValue: measurementChoice,
+            onChanged: (val) {
+              setState(() {
+                measurementChoice = val;
+                measurementChoiceSelected = true;
+              });
+            },
+          ),
+          RadioListTile<MeasurementChoice>(
+            contentPadding: EdgeInsets.symmetric(
+                vertical: size.height * 0.008, horizontal: size.width * 0.008),
+            title: Text(
+              'Measurements via Agent',
+              style: kInputStyle.copyWith(locale: context.locale),
+            ).tr(),
+            subtitle: Text(
+              'Tailor will send an agent to take measurements.',
+              style: kTextStyle.copyWith(locale: context.locale, fontSize: 12),
+            ).tr(),
+            value: MeasurementChoice.viaAgent,
+            groupValue: measurementChoice,
+            onChanged: (val) {
+              setState(() {
+                measurementChoice = val;
+                measurementChoiceSelected = true;
+              });
+            },
+          ),
+          SizedBox(height: size.height * 0.04),
+          buildMeasurementsNextButton(size),
         ],
       ),
     );
@@ -745,7 +820,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
     setState(() {
       isNextBtnPressed = false;
       gender = null;
-      measurementChoice = MeasurementChoice.online;
+      measurementChoice = null;
       profileImageUrl = initialImageUrl;
       addressController.clear();
       nameController.clear();
@@ -844,6 +919,30 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
         SizedBox(height: size.width * 0.02),
         buildRegisterButton(),
       ],
+    );
+  }
+
+  Widget buildMeasurementsNextButton(Size size) {
+    return RectangularRoundedButton(
+      buttonName: 'Next',
+      onPressed: () async {
+        if (!measurementChoiceSelected) {
+          showMyDialog(context, 'Error!', "choose a measurement option.",
+              disposeAfterMillis: 1500);
+          return;
+        } else {
+          measurementsNextButtonPressed = true;
+          customer!.measurementChoice = measurementChoice!;
+          if (mounted) {
+            setState(() {});
+          }
+          if (measurementChoice != MeasurementChoice.online) {
+            onRegisterButtonPressed();
+          }
+        }
+        print("updated customer data: $customer");
+        print("Measurement button pressed.");
+      },
     );
   }
 }

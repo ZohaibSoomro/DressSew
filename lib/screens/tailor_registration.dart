@@ -586,10 +586,11 @@ class _TailorRegitrationState extends State<TailorRegistration> {
       child: RectangularRoundedButton(
         padding: EdgeInsets.zero,
         fontSize: 15,
-        buttonName:
-            isUploadingProfileImage || profileImageUrl == initialImageUrl
-                ? 'Select'
-                : "Change",
+        buttonName: profileImageUrl == null ||
+                isUploadingProfileImage ||
+                profileImageUrl == initialImageUrl
+            ? 'Select'
+            : "Change",
         onPressed: isUploadingProfileImage
             ? null
             : () async {
@@ -612,6 +613,9 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                       .child('${widget.userData.email}/profileImage.png');
                   final uploadTask = await storageRef.putFile(File(file.path));
                   final downloadUrl = await uploadTask.ref.getDownloadURL();
+                  FirebaseAuth.instance.currentUser
+                      ?.updatePhotoURL(downloadUrl)
+                      .then((value) => print("Photo url updated."));
                   setState(() {
                     profileImageUrl = downloadUrl;
                     taskSuccessful = true;

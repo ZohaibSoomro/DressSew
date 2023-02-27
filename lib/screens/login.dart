@@ -1,3 +1,4 @@
+import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dresssew/main.dart';
 import 'package:dresssew/screens/tailor_registration.dart';
@@ -10,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter_zoom_drawer/config.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,6 +37,8 @@ class _LoginState extends State<Login> {
   final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final controller = ZoomDrawerController();
+  String language = "English";
 
   @override
   void initState() {
@@ -175,7 +179,6 @@ class _LoginState extends State<Login> {
                             child: TextButton(
                               onPressed: () {
                                 clearText();
-
                                 Navigator.pushNamed(context, ForgotPassword.id);
                               },
                               child: Text(
@@ -325,9 +328,13 @@ class _LoginState extends State<Login> {
                                             isEqualTo:
                                                 userCredentials.user!.email)
                                         .get();
+
                                     await showMyDialog(
                                         context, 'Info.', "Login Successful.",
                                         isError: false);
+                                    SharedPreferences prefs =
+                                        await SharedPreferences.getInstance();
+                                    prefs.setBool(Login.isLoggedInText, true);
                                     if (mounted) {
                                       setState(() {
                                         isLoading = false;
@@ -448,15 +455,59 @@ class _LoginState extends State<Login> {
                   ),
                 ),
               ),
+              // Align(
+              //     alignment:
+              //         isUrduActivated ? Alignment.topLeft : Alignment.topRight,
+              //     child: Padding(
+              //       padding: const EdgeInsets.all(5),
+              //       child: buildTranslateButton(context, onTranslated: () {
+              //         setState(() {});
+              //       }),
+              //     )),
               Align(
-                  alignment:
-                      isUrduActivated ? Alignment.topLeft : Alignment.topRight,
+                alignment: Alignment.topLeft,
+                child: SizedBox(
+                  width: size.width * 0.3,
+                  height: size.height * 0.06,
                   child: Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: buildTranslateButton(context, onTranslated: () {
-                      setState(() {});
-                    }),
-                  )),
+                    padding: const EdgeInsets.all(2.0),
+                    child: AnimatedToggleSwitch<String>.size(
+                      current: language,
+                      values: ["English", "اردو"],
+                      iconBuilder: (value, size) {
+                        return Center(
+                          child: Text(
+                            value,
+                            style: kInputStyle.copyWith(
+                                fontSize: language == value ? 12 : 10,
+                                color: language == value
+                                    ? Colors.white
+                                    : Colors.black),
+                          ),
+                        );
+                      },
+                      onChanged: (val) async {
+                        if (mounted) {
+                          setState(() {
+                            language = val;
+                            if (language == "English") {
+                              isUrduActivated = false;
+                            } else {
+                              isUrduActivated = true;
+                            }
+                          });
+                        }
+                        await context.setLocale(language == "English"
+                            ? const Locale("en", "US")
+                            : const Locale("ur", "PK"));
+                        if (mounted) {
+                          setState(() {});
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

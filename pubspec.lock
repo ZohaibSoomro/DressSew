@@ -25,6 +25,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.6.0"
+  animated_toggle_switch:
+    dependency: "direct main"
+    description:
+      name: animated_toggle_switch
+      sha256: "884991a3be37fc7d7500a673e0e82187ba7c061138526811547833bb5527f2c6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.1"
   archive:
     dependency: transitive
     description:
@@ -349,6 +357,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_zoom_drawer:
+    dependency: "direct main"
+    description:
+      name: flutter_zoom_drawer
+      sha256: "93c4f2cfe1edfe2f9e48b94a7f9538520d2f2593e202b8e89c394b7d27137a8e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.3"
   fluttertoast:
     dependency: "direct main"
     description:

@@ -1,10 +1,10 @@
-import 'package:dresssew/screens/login.dart';
+import 'package:dresssew/main.dart';
 import 'package:dresssew/utilities/constants.dart';
+import 'package:dresssew/utilities/my_drawer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_zoom_drawer/config.dart';
 
 class Home extends StatefulWidget {
   static const id = "/home";
@@ -13,6 +13,8 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final controller = ZoomDrawerController();
+
   @override
   void initState() {
     super.initState();
@@ -24,28 +26,40 @@ class _HomeState extends State<Home> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Welcome dear!', style: kInputStyle.copyWith(fontSize: 20))
-            .tr(),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              prefs.setBool(Login.isLoggedInText, false);
-              Navigator.pushReplacementNamed(context, Login.id);
+    return MyDrawer(
+      userData: appUser!,
+      controller: controller,
+      mainScreen: Scaffold(
+        appBar: AppBar(
+          title:
+              Text('Welcome dear!', style: kInputStyle.copyWith(fontSize: 20))
+                  .tr(),
+          leading: IconButton(
+            onPressed: () {
+              controller.open!.call();
             },
-            icon: const Icon(FontAwesomeIcons.arrowRightFromBracket),
-          )
-        ],
-      ),
-      body: Center(
-        child: Text(
-          'Hello! \n${FirebaseAuth.instance.currentUser?.displayName}',
-          style: kTitleStyle.copyWith(fontSize: 30),
-          textAlign: TextAlign.center,
+            icon: Padding(
+              padding: const EdgeInsets.all(5),
+              child: Icon(Icons.menu),
+            ),
+          ),
+        ),
+        body: Stack(
+          children: [
+            Center(
+              child: Text(
+                'Hello! \n${FirebaseAuth.instance.currentUser?.displayName}',
+                style: kTitleStyle.copyWith(fontSize: 30),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
         ),
       ),
     );
