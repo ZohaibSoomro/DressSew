@@ -1,5 +1,6 @@
 import 'package:dresssew/models/measurement.dart';
 import 'package:dresssew/models/tailor.dart';
+import 'package:dresssew/models/user_location.dart';
 
 class Customer {
   String? id;
@@ -13,6 +14,7 @@ class Customer {
   String? userDocId;
   List<Measurement> measurements;
   MeasurementChoice measurementChoice;
+  UserLocation location;
 
   Customer({
     this.id,
@@ -26,6 +28,7 @@ class Customer {
     this.measurementChoice = MeasurementChoice.online,
     this.phoneNumber,
     this.measurements = const [],
+    required this.location,
   });
 
   Map<String, dynamic> toJson() => {
@@ -40,6 +43,7 @@ class Customer {
         'address': address,
         'measurements': measurements.map((e) => e.toJson()).toList(),
         'profile_image_url': profileImageUrl,
+        'user_location': location.toJson(),
       };
 
   static Customer fromJson(Map<String, dynamic> json) {
@@ -56,6 +60,7 @@ class Customer {
             .map((e) => Measurement.fromJson(e))
             .toList(),
         phoneNumber: json['phone_number'],
+        location: UserLocation.fromMap(json['user_location']),
         orders: (json['orders'] as List)
             .map((e) => OrdersPlaced.fromJson(e))
             .toList());

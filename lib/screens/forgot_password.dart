@@ -1,12 +1,12 @@
 import 'package:dresssew/main.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
-import 'package:dresssew/utilities/rectangular_button.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import '../utilities/custom_widgets/rectangular_button.dart';
 
 class ForgotPassword extends StatefulWidget {
   static const String id = '/forgotPassword';

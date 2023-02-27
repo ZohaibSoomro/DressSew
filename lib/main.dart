@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dresssew/models/app_user.dart';
+import 'package:dresssew/networking/firestore_helper.dart';
 import 'package:dresssew/screens/customer_registration.dart';
 import 'package:dresssew/screens/forgot_password.dart';
 import 'package:dresssew/screens/home.dart';
@@ -24,12 +24,9 @@ void main() async {
   isLoggedIn = prefs.getBool(Login.isLoggedInText);
   print('Is Logged In: $isLoggedIn');
   if (isLoggedIn != null && isLoggedIn!) {
-    final appUserData = await FirebaseFirestore.instance
-        .collection("users")
-        .where('email', isEqualTo: FirebaseAuth.instance.currentUser!.email)
-        .limit(1)
-        .get();
-    appUser = AppUser.fromJson(appUserData.docs.first.data());
+    appUser = (await FireStoreHelper()
+            .getAppUserWithEmail(FirebaseAuth.instance.currentUser!.email))
+        as AppUser;
   }
 
   runApp(

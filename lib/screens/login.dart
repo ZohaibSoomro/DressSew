@@ -4,7 +4,6 @@ import 'package:dresssew/main.dart';
 import 'package:dresssew/screens/tailor_registration.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
-import 'package:dresssew/utilities/rectangular_button.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,6 +16,7 @@ import 'package:loading_overlay/loading_overlay.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/app_user.dart';
+import '../utilities/custom_widgets/rectangular_button.dart';
 import 'customer_registration.dart';
 import 'forgot_password.dart';
 import 'home.dart';
@@ -216,19 +216,20 @@ class _LoginState extends State<Login> {
                                       .where('email', isEqualTo: email.trim())
                                       .limit(1)
                                       .get();
-                                  final appUser = AppUser.fromJson(
+                                  final user = AppUser.fromJson(
                                       appUserData.docs.first.data());
-                                  print("Customer loaded: ${appUser.toJson()}");
+                                  appUser = user;
+                                  print("Customer loaded: ${user.toJson()}");
                                   //if is not registered as customer or tailor but just has created account
-                                  if (!appUser.isRegistered) {
+                                  if (!user.isRegistered) {
                                     //if not registered as tailor but creaed account as  tialor
-                                    if (appUser.isTailor) {
+                                    if (user.isTailor) {
                                       Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               TailorRegistration(
-                                                  userData: appUser),
+                                                  userData: user),
                                         ),
                                       );
                                     }
@@ -239,7 +240,7 @@ class _LoginState extends State<Login> {
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               CustomerRegistration(
-                                                  userData: appUser),
+                                                  userData: user),
                                         ),
                                       );
                                     }
@@ -340,20 +341,22 @@ class _LoginState extends State<Login> {
                                         isLoading = false;
                                       });
                                     }
-                                    print(
-                                        "Going to register as customer frrom google sign in");
-                                    final appUser = AppUser.fromJson(
+
+                                    final user = AppUser.fromJson(
                                         userData.docs.first.data());
+                                    appUser = user;
                                     //if is not registered as customer or tailor but just has created account
-                                    if (!appUser.isRegistered) {
+                                    if (!user.isRegistered) {
+                                      print(
+                                          "Going to register as customer frrom google sign in");
                                       //if not registered as tailor but creaed account as  tialor
-                                      if (appUser.isTailor) {
+                                      if (user.isTailor) {
                                         Navigator.pushReplacement(
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 TailorRegistration(
-                                                    userData: appUser),
+                                                    userData: user),
                                           ),
                                         );
                                       }
@@ -364,7 +367,7 @@ class _LoginState extends State<Login> {
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 CustomerRegistration(
-                                                    userData: appUser),
+                                                    userData: user),
                                           ),
                                         );
                                       }

@@ -38,4 +38,9 @@ class AppUser {
       customerOrTailorId: json['customer_or_tailor_id'],
     );
   }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }

@@ -4,9 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dresssew/models/app_user.dart';
 import 'package:dresssew/models/customer.dart';
 import 'package:dresssew/models/measurement.dart';
+import 'package:dresssew/networking/location_helper.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
-import 'package:dresssew/utilities/rectangular_button.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -21,7 +21,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
 import '../models/tailor.dart';
-import '../utilities/rate_input_text_field.dart';
+import '../models/user_location.dart';
+import '../utilities/custom_widgets/rate_input_text_field.dart';
+import '../utilities/custom_widgets/rectangular_button.dart';
 import 'home.dart';
 import 'login.dart';
 
@@ -76,6 +78,8 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
 
   bool measurementsNextButtonPressed = false;
 
+  UserLocation? location;
+
   @override
   void initState() {
     super.initState();
@@ -83,6 +87,14 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
     if (widget.userData.name.isNotEmpty) {
       nameController.text = widget.userData.name;
     }
+    LocationHelper().getUserLocation().then((value) {
+      if (value != null && mounted) {
+        setState(() {
+          location = value;
+        });
+      }
+      print(value?.toJson().toString());
+    });
     Future.delayed(const Duration(milliseconds: 20)).then((value) {
       if (mounted) {
         setState(() {});
@@ -463,6 +475,7 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
               }
               print("Validation successful");
               customer = Customer(
+                location: location!,
                 name: capitalizeText(nameController.text.trim()),
                 email: widget.userData.email,
                 gender: gender!,

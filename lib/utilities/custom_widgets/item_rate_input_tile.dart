@@ -1,9 +1,8 @@
-import 'package:dresssew/utilities/rate_input_text_field.dart';
+import 'package:dresssew/utilities/constants.dart';
+import 'package:dresssew/utilities/custom_widgets/rate_input_text_field.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import 'constants.dart';
 
 class ItemRateInputTile extends StatelessWidget {
   final String title;

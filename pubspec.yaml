@@ -30,6 +30,7 @@ dependencies:
   fluttertoast: ^8.2.1
   flutter_zoom_drawer: ^3.0.3
   animated_toggle_switch: ^0.6.1
+  location: ^4.4.0
   # flutter_native_splash-development.yaml
 flutter_native_splash:
   color: "#ffffff"

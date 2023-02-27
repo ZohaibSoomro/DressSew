@@ -1,5 +1,6 @@
 import 'package:dresssew/models/measurement.dart';
 import 'package:dresssew/models/shop.dart';
+import 'package:dresssew/models/user_location.dart';
 
 class Tailor {
   String tailorName;
@@ -18,6 +19,7 @@ class Tailor {
   String? onTimeDelivery;
   double? rating;
   List<OrdersPlaced> orders;
+  UserLocation location;
 
   Tailor({
     this.id,
@@ -36,27 +38,30 @@ class Tailor {
     this.rates = const [],
     this.expertise = const [],
     required this.stitchingType,
+    required this.location,
   });
 
   static Tailor fromJson(Map<String, dynamic> json) => Tailor(
-      id: json['id'],
-      userDocId: json['user_doc_id'],
-      tailorName: json['tailor_name'],
-      phoneNumber: json['phone_number'],
-      shop: Shop.fromJson(json['shop']),
-      email: json['email'],
-      gender: getGender(json['gender']),
-      experience: json['experience'],
-      customizes: json['customizes'],
-      onTimeDelivery: json['on_time_delivery'],
-      rating: json['rating'],
-      orders: (json['orders'] as List)
-          .map((e) => OrdersPlaced.fromJson(e))
-          .toList(),
-      rates: (json['rates'] as List).map((e) => Rates.fromJson(e)).toList(),
-      expertise: json['expertise'].cast<String>(),
-      stitchingType: getStitchingType(json['stitching_type']),
-      profileImageUrl: json['profile_image_url']);
+        id: json['id'],
+        userDocId: json['user_doc_id'],
+        tailorName: json['tailor_name'],
+        phoneNumber: json['phone_number'],
+        shop: Shop.fromJson(json['shop']),
+        email: json['email'],
+        gender: getGender(json['gender']),
+        experience: json['experience'],
+        customizes: json['customizes'],
+        onTimeDelivery: json['on_time_delivery'],
+        rating: json['rating'],
+        orders: (json['orders'] as List)
+            .map((e) => OrdersPlaced.fromJson(e))
+            .toList(),
+        rates: (json['rates'] as List).map((e) => Rates.fromJson(e)).toList(),
+        expertise: json['expertise'].cast<String>(),
+        stitchingType: getStitchingType(json['stitchingType']),
+        location: UserLocation.fromMap(json['user_location']),
+        profileImageUrl: json['profile_image_url'],
+      );
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -70,12 +75,18 @@ class Tailor {
         'profile_image_url': profileImageUrl,
         'customizes': customizes,
         'on_time_delivery': onTimeDelivery,
+        'user_location': location.toJson(),
         'rating': rating,
         'orders': orders.map((e) => e.toJson()).toList(),
         'rates': rates.map((e) => e.toJson()).toList(),
         'expertise': expertise,
         'stitchingType': stitchingType.name,
       };
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }
 
 class OrdersPlaced {

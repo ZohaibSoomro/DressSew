@@ -4,11 +4,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dresssew/models/app_user.dart';
 import 'package:dresssew/models/customer.dart';
 import 'package:dresssew/models/shop.dart';
+import 'package:dresssew/models/user_location.dart';
+import 'package:dresssew/networking/location_helper.dart';
 import 'package:dresssew/utilities/constants.dart';
-import 'package:dresssew/utilities/expandable_list_tile.dart';
-import 'package:dresssew/utilities/item_rate_input_tile.dart';
+import 'package:dresssew/utilities/custom_widgets/expandable_list_tile.dart';
+import 'package:dresssew/utilities/custom_widgets/rectangular_button.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
-import 'package:dresssew/utilities/rectangular_button.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -24,6 +25,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
 import '../models/tailor.dart';
+import '../utilities/custom_widgets/item_rate_input_tile.dart';
 import 'home.dart';
 import 'login.dart';
 
@@ -60,6 +62,7 @@ class _TailorRegitrationState extends State<TailorRegistration> {
   bool isUploadingProfileImage = false;
   bool isRegisterBtnPressed = false;
   String? profileImageUrl;
+
   // String? logoImageUrl;
   List<String?> shopImagesList = [];
   String? initialImageUrl;
@@ -82,6 +85,8 @@ class _TailorRegitrationState extends State<TailorRegistration> {
   final nameController = TextEditingController(
       text: FirebaseAuth.instance.currentUser?.displayName);
 
+  UserLocation? location;
+
   @override
   void initState() {
     super.initState();
@@ -89,6 +94,14 @@ class _TailorRegitrationState extends State<TailorRegistration> {
     if (widget.userData.name.isNotEmpty) {
       nameController.text = widget.userData.name;
     }
+    LocationHelper().getUserLocation().then((value) {
+      if (value != null && mounted) {
+        setState(() {
+          location = value;
+        });
+      }
+      print(value?.toJson().toString());
+    });
     Future.delayed(const Duration(milliseconds: 20)).then((value) {
       if (mounted) {
         setState(() {});
@@ -718,13 +731,15 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               gender != null &&
               stitchingType != null &&
               selectedExpertise.isNotEmpty) {
-            if (profileImageUrl == null || profileImageUrl == initialImageUrl) {
+            if (profileImageUrl == null ||
+                profileImageUrl == initialImageUrl && location != null) {
               showMyDialog(context, 'Error!', "add a profile picture.",
                   disposeAfterMillis: 1500);
               return;
             }
             print("Validation successful");
             tailor = Tailor(
+              location: location!,
               tailorName: capitalizeText(nameController.text.trim()),
               email: widget.userData.email,
               userDocId: widget.userData.id,

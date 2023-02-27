@@ -5,7 +5,6 @@ import 'package:dresssew/screens/customer_registration.dart';
 import 'package:dresssew/screens/tailor_registration.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
-import 'package:dresssew/utilities/rectangular_button.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,6 +13,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:loading_overlay/loading_overlay.dart';
+import 'package:location/location.dart';
+
+import '../utilities/custom_widgets/rectangular_button.dart';
 
 class SignUp extends StatefulWidget {
   static const String id = '/signUp';
@@ -289,6 +291,35 @@ class _SignUpState extends State<SignUp> {
                                 await showMyDialog(context, 'Info.',
                                     "Account created successfully",
                                     isError: false, disposeAfterMillis: 1000);
+                                Location location = new Location();
+
+                                bool _serviceEnabled;
+                                PermissionStatus _permissionGranted;
+                                LocationData _locationData;
+
+                                _serviceEnabled =
+                                    await location.serviceEnabled();
+                                if (!_serviceEnabled) {
+                                  _serviceEnabled =
+                                      await location.requestService();
+                                  if (!_serviceEnabled) {
+                                    return;
+                                  }
+                                }
+
+                                _permissionGranted =
+                                    await location.hasPermission();
+                                if (_permissionGranted ==
+                                    PermissionStatus.denied) {
+                                  _permissionGranted =
+                                      await location.requestPermission();
+                                  if (_permissionGranted !=
+                                      PermissionStatus.granted) {
+                                    return;
+                                  }
+                                }
+
+                                _locationData = await location.getLocation();
                                 FirebaseAuth.instance
                                     .signInWithEmailAndPassword(
                                         email: email, password: password)

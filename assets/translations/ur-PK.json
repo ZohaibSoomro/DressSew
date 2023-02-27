@@ -30,6 +30,7 @@
 	"Stitching type":"سلائی کی قسم",
 	"Do you customize dresses?":"کیا آپ لباس کو اپنی مرضی کے مطابق بناتے ہیں؟",
 	"experience":"تجربہ",
+	"Experience":"تجربہ",
 	"Gents":"مرد",
 	"Ladies":"خواتین",
 	"Both":"دونوں",
@@ -169,8 +170,8 @@
 	"History": "تاریخ",
 	"Log out": "لاگ آؤٹ کریں",
 	"Back": "واپس جاؤ",
-	"": "",
-	"": "",
+	"enable location service": " لوکیشن سروِس بحال کریں",
+	"location permission required": "  لوکیشن کی اجازت کی ضروری ہے",
 	"": "",
 	"": ""
 }
