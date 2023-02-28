@@ -514,15 +514,6 @@ class _SignUpState extends State<SignUp> {
                 ),
               ),
             ),
-            Align(
-                alignment:
-                    isUrduActivated ? Alignment.topLeft : Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: buildTranslateButton(context, onTranslated: () {
-                    if (mounted) setState(() {});
-                  }),
-                )),
           ]),
         ),
       ),

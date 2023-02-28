@@ -148,7 +148,7 @@ class _MyDrawerState extends State<MyDrawer> {
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
                               letterSpacing: 0.5),
-                        ),
+                        ).tr(),
                       ),
                       SizedBox(height: size.height * 0.01),
                     ],
@@ -209,7 +209,7 @@ class _MyDrawerState extends State<MyDrawer> {
       title: Text(
         title,
         style: kInputStyle,
-      ),
+      ).tr(),
     );
   }
 

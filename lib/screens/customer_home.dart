@@ -10,30 +10,47 @@ import 'package:loading_overlay/loading_overlay.dart';
 
 import '../models/tailor.dart';
 
-class Home extends StatefulWidget {
-  static const id = "/home";
+class CustomerHomeView extends StatefulWidget {
+  static const id = "/customer_home";
+
+  const CustomerHomeView({super.key});
   @override
-  _HomeState createState() => _HomeState();
+  _CustomerHomeViewState createState() => _CustomerHomeViewState();
 }
 
-class _HomeState extends State<Home> {
+class _CustomerHomeViewState extends State<CustomerHomeView> {
   final controller = ZoomDrawerController();
   final FireStoreHelper fireStorer = FireStoreHelper();
   List<Tailor> tailors = [];
+  bool isLoadingTailors = false;
 
   @override
   void initState() {
     super.initState();
-    fireStorer.loadAllTailors().then((value) {
-      tailors = value;
-      if (mounted) setState(() {});
-      print("Tailors length: ${tailors.length}");
-    });
+    loadTailors();
     Future.delayed(const Duration(milliseconds: 20)).then((value) {
       if (mounted) {
         setState(() {});
       }
     });
+  }
+
+  loadTailors() {
+    toggleLoadingStatus();
+    fireStorer.loadAllTailors().then((value) {
+      tailors = value;
+      if (mounted) setState(() {});
+      print("Tailors length: ${tailors.length}");
+      toggleLoadingStatus();
+    });
+  }
+
+  void toggleLoadingStatus() {
+    if (mounted) {
+      setState(() {
+        isLoadingTailors = !isLoadingTailors;
+      });
+    }
   }
 
   @override
@@ -44,7 +61,8 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return LoadingOverlay(
-      isLoading: appUser == null,
+      isLoading: appUser == null || isLoadingTailors,
+      progressIndicator: const CircularProgressIndicator(),
       child: MyDrawer(
         userData: appUser!,
         controller: controller,
@@ -57,8 +75,8 @@ class _HomeState extends State<Home> {
               onPressed: () {
                 controller.open!.call();
               },
-              icon: Padding(
-                padding: const EdgeInsets.all(5),
+              icon: const Padding(
+                padding: EdgeInsets.all(5),
                 child: Icon(Icons.menu),
               ),
             ),

@@ -130,16 +130,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 ),
               ),
             ),
-            Align(
-              alignment:
-                  isUrduActivated ? Alignment.topLeft : Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.all(5),
-                child: buildTranslateButton(context, onTranslated: () {
-                  setState(() {});
-                }),
-              ),
-            ),
           ],
         ),
       ),

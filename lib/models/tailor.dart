@@ -16,7 +16,7 @@ class Tailor {
   Shop? shop;
   int? experience;
   bool? customizes;
-  String? onTimeDelivery;
+  double? onTimeDelivery;
   double? rating;
   List<OrdersPlaced> orders;
   UserLocation location;
@@ -30,8 +30,8 @@ class Tailor {
     required this.email,
     this.experience,
     this.customizes,
-    this.onTimeDelivery,
-    this.rating,
+    this.onTimeDelivery = 100,
+    this.rating = 0,
     required this.gender,
     this.orders = const [],
     this.profileImageUrl,
@@ -51,8 +51,8 @@ class Tailor {
         gender: getGender(json['gender']),
         experience: json['experience'],
         customizes: json['customizes'],
-        onTimeDelivery: json['on_time_delivery'],
-        rating: json['rating'],
+        onTimeDelivery: json['on_time_delivery']?.toDouble(),
+        rating: json['rating']?.toDouble(),
         orders: (json['orders'] as List)
             .map((e) => OrdersPlaced.fromJson(e))
             .toList(),

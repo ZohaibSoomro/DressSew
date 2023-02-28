@@ -1,4 +1,5 @@
 import 'package:dresssew/models/tailor.dart';
+import 'package:dresssew/screens/tailor_profle.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -15,9 +16,17 @@ class TailorCard extends StatelessWidget {
         child: InkWell(
           onTap: () {
             print("Tailor card tapped");
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TailorProfile(
+                  tailor: tailor,
+                ),
+              ),
+            );
           },
           child: Card(
-            margin: EdgeInsets.all(10),
+            margin: const EdgeInsets.all(10),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -37,7 +46,10 @@ class TailorCard extends StatelessWidget {
                         radius: 25,
                       ),
                     ),
-                    title: Text(tailor.tailorName),
+                    title: Text(
+                      tailor.tailorName,
+                      style: kInputStyle,
+                    ),
                     subtitle: Text(
                       "${tailor.shop!.name}(${tailor.shop!.city})",
                       style: kTextStyle.copyWith(fontSize: 12),
@@ -48,9 +60,12 @@ class TailorCard extends StatelessWidget {
                           color: Colors.grey, fontSize: 10),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(15.0, 10, 0, 0),
-                    child: Text('Expertise'),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(15.0, 10, 0, 0),
+                    child: Text(
+                      'Expertise:',
+                      style: kInputStyle,
+                    ),
                   ),
                   Wrap(
                     spacing: 5,
@@ -58,11 +73,11 @@ class TailorCard extends StatelessWidget {
                       ...List.generate(
                         tailor.expertise.length,
                         (index) => InputChip(
-                          label:
-                              Text(tailor.expertise[index], style: kTextStyle),
+                          label: Text(tailor.expertise[index],
+                              style: kTextStyle.copyWith(fontSize: 12)),
                           onSelected: (val) {},
                           backgroundColor: Colors.grey.shade200,
-                          avatar: FlutterLogo(),
+                          avatar: const FlutterLogo(),
                         ),
                       )
                     ],

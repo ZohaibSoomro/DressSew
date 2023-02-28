@@ -55,3 +55,7 @@ final Map<String, List<String>> ladiesCategories = {
   "Cultural": ["Sindhi", "Punjabi", "Balochi", "Pakhtun"],
   "Others": ["Costumes"],
 };
+String capitalizeText(String text) {
+  text = text.trim();
+  return text[0].toUpperCase() + text.substring(1);
+}

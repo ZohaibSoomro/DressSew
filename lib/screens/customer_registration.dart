@@ -24,7 +24,7 @@ import '../models/tailor.dart';
 import '../models/user_location.dart';
 import '../utilities/custom_widgets/rate_input_text_field.dart';
 import '../utilities/custom_widgets/rectangular_button.dart';
-import 'home.dart';
+import 'customer_home.dart';
 import 'login.dart';
 
 class CustomerRegistration extends StatefulWidget {
@@ -181,15 +181,6 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                 ),
               ),
             ),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(5),
-                child: buildTranslateButton(context, onTranslated: () {
-                  setState(() {});
-                }),
-              ),
-            ),
           ],
         ),
       ),
@@ -251,6 +242,9 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
           FirebaseAuth.instance.currentUser!
               .updateDisplayName(widget.userData.name)
               .then((value) => print('Display name updated.'));
+          FirebaseAuth.instance.currentUser!
+              .updatePhotoURL(customer!.profileImageUrl)
+              .then((value) => print('Display photo url updated.'));
           //updating customer id field
           doc.update(customer!.toJson()).then((value) {
             widget.userData.isRegistered = true;
@@ -268,10 +262,10 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                   .doc(widget.userData.id)
                   .update(widget.userData.toJson());
               print("customer's user Data updated");
-            }).then((value) {
+            }).then((value) async {
               if (taskSuccessful) {
                 if (widget.fromScreen == Login.id) {
-                  Navigator.pushReplacementNamed(context, Home.id);
+                  Navigator.pushReplacementNamed(context, CustomerHomeView.id);
                 } else {
                   //1 inidicates it was a customer registration & was successful
                   if (mounted) {
@@ -280,14 +274,14 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
                       isSavingDataInFirebase = false;
                     });
                   }
-                  FirebaseAuth.instance
+                  await FirebaseAuth.instance
                       .signOut()
                       .then((value) => SharedPreferences.getInstance().then(
                           (pref) => pref.setBool(Login.isLoggedInText, false)))
                       .then((value) => showMyDialog(context, 'Success',
-                              'Customer registration successful.',
-                              isError: false, disposeAfterMillis: 1200)
-                          .then((value) => Navigator.pop(context, 1)));
+                          'Customer registration successful.',
+                          isError: false, disposeAfterMillis: 1200));
+                  Navigator.pushReplacementNamed(context, Login.id);
                 }
               }
             });
@@ -822,11 +816,6 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
         isVerifyingPhoneNumber = false;
       });
     }
-  }
-
-  static String capitalizeText(String text) {
-    text = text.trim();
-    return text[0].toUpperCase() + text.substring(1);
   }
 
   void onClearButtonPressed() {

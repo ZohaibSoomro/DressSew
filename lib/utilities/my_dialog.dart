@@ -38,13 +38,14 @@ Future showMyDialog(context, String title, String msg,
       return AlertDialog(
         title: Center(
             child: Text(title,
-                    style: kTitleStyle.copyWith(
+                    style: kInputStyle.copyWith(
                         color: isError ? Colors.red : Colors.blue,
                         fontSize: 22))
                 .tr()),
         content: Text(
           msg,
           textAlign: TextAlign.center,
+          style: kTextStyle,
         ).tr(),
       );
     },

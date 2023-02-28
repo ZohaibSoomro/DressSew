@@ -6,6 +6,7 @@ import 'package:dresssew/models/customer.dart';
 import 'package:dresssew/models/shop.dart';
 import 'package:dresssew/models/user_location.dart';
 import 'package:dresssew/networking/location_helper.dart';
+import 'package:dresssew/screens/tailor_home.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:dresssew/utilities/custom_widgets/expandable_list_tile.dart';
 import 'package:dresssew/utilities/custom_widgets/rectangular_button.dart';
@@ -26,7 +27,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
 import '../models/tailor.dart';
 import '../utilities/custom_widgets/item_rate_input_tile.dart';
-import 'home.dart';
 import 'login.dart';
 
 class TailorRegistration extends StatefulWidget {
@@ -182,15 +182,6 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                 ),
               ),
             ),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(5),
-                child: buildTranslateButton(context, onTranslated: () {
-                  setState(() {});
-                }),
-              ),
-            ),
           ],
         ),
       ),
@@ -304,6 +295,9 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               FirebaseAuth.instance.currentUser!
                   .updateDisplayName(widget.userData.name)
                   .then((value) => print('Display name updated.'));
+              FirebaseAuth.instance.currentUser!
+                  .updatePhotoURL(tailor!.profileImageUrl)
+                  .then((value) => print('Display photo url updated.'));
               doc.update(tailor!.toJson()).then((value) {
                 widget.userData.isRegistered = true;
                 widget.userData.isTailor = true;
@@ -322,8 +316,8 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                 if (taskSuccessful) {
                   if (widget.fromScreen == Login.id) {
                     Future.delayed(const Duration(milliseconds: 20)).then(
-                        (value) =>
-                            Navigator.pushReplacementNamed(context, Home.id));
+                        (value) => Navigator.pushReplacementNamed(
+                            context, TailorHomeView.id));
                   } else {
                     //1 inidicates it was a tailor registration & was successful
 
@@ -339,10 +333,9 @@ class _TailorRegitrationState extends State<TailorRegistration> {
                           isSavingDataInFirebase = false;
                         });
                       }
-                      showMyDialog(context, 'Success',
-                              'Tailor registration successful.',
-                              isError: false, disposeAfterMillis: 1200)
-                          .then((value) => Navigator.pop(context, 1));
+                      showMyDialog(
+                          context, 'Success', 'Tailor registration successful.',
+                          isError: false, disposeAfterMillis: 1200);
                     });
                   }
                 }
@@ -738,6 +731,12 @@ class _TailorRegitrationState extends State<TailorRegistration> {
               return;
             }
             print("Validation successful");
+            if (location == null) {
+              showMyDialog(context, 'Error!',
+                  "please go to settings and give location permission.",
+                  disposeAfterMillis: 3000);
+              return;
+            }
             tailor = Tailor(
               location: location!,
               tailorName: capitalizeText(nameController.text.trim()),

@@ -20,7 +20,7 @@ class LocationHelper {
     _permissionGranted = await location.hasPermission();
     if (_permissionGranted == PermissionStatus.denied) {
       _permissionGranted = await location.requestPermission();
-      if (_permissionGranted != PermissionStatus.denied) {
+      if (_permissionGranted != PermissionStatus.granted) {
         Fluttertoast.showToast(
             msg: "location permission required.", gravity: ToastGravity.CENTER);
         return null;

@@ -1,10 +1,11 @@
 import 'package:dresssew/models/app_user.dart';
 import 'package:dresssew/networking/firestore_helper.dart';
+import 'package:dresssew/screens/customer_home.dart';
 import 'package:dresssew/screens/customer_registration.dart';
 import 'package:dresssew/screens/forgot_password.dart';
-import 'package:dresssew/screens/home.dart';
 import 'package:dresssew/screens/login.dart';
 import 'package:dresssew/screens/sign_up.dart';
+import 'package:dresssew/screens/tailor_home.dart';
 import 'package:dresssew/screens/tailor_registration.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -53,14 +54,15 @@ class DressSewApp extends StatelessWidget {
       home: isLoggedIn == null || !isLoggedIn!
           ? const Login()
           : appUser != null && appUser!.isRegistered
-              ? Home()
+              ? CustomerHomeView()
               : appUser!.isTailor
                   ? TailorRegistration(userData: appUser!)
                   : CustomerRegistration(
                       userData: appUser!,
                     ),
       routes: {
-        Home.id: ((context) => Home()),
+        CustomerHomeView.id: ((context) => CustomerHomeView()),
+        TailorHomeView.id: ((context) => TailorHomeView()),
         Login.id: ((context) => const Login()),
         SignUp.id: ((context) => const SignUp()),
         ForgotPassword.id: ((context) => ForgotPassword()),
