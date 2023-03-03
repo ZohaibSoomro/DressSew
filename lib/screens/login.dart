@@ -1,8 +1,8 @@
 import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dresssew/main.dart';
-import 'package:dresssew/screens/tailor_home.dart';
-import 'package:dresssew/screens/tailor_registration.dart';
+import 'package:dresssew/screens/customer/customer_main_screen.dart';
+import 'package:dresssew/screens/tailor/tailor_home.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -18,10 +18,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/app_user.dart';
 import '../utilities/custom_widgets/rectangular_button.dart';
-import 'customer_home.dart';
-import 'customer_registration.dart';
+import 'customer/customer_registration.dart';
 import 'forgot_password.dart';
 import 'sign_up.dart';
+import 'tailor/tailor_registration.dart';
 
 class Login extends StatefulWidget {
   static const String isLoggedInText = "isLoggedIn";
@@ -253,7 +253,7 @@ class _LoginState extends State<Login> {
                                         context,
                                         user.isTailor
                                             ? TailorHomeView.id
-                                            : CustomerHomeView.id);
+                                            : CustomerMainScreen.id);
                                   }
                                 } on FirebaseAuthException catch (e) {
                                   if (e.code == "user-not-found") {
@@ -384,7 +384,7 @@ class _LoginState extends State<Login> {
                                           context,
                                           user.isTailor
                                               ? TailorHomeView.id
-                                              : CustomerHomeView.id);
+                                              : CustomerMainScreen.id);
                                     }
                                   } else {
                                     showMyBanner(

@@ -1,14 +1,18 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dresssew/main.dart';
 import 'package:dresssew/models/app_user.dart';
 import 'package:dresssew/models/customer.dart';
 import 'package:dresssew/models/shop.dart';
+import 'package:dresssew/models/tailor.dart';
 import 'package:dresssew/models/user_location.dart';
 import 'package:dresssew/networking/location_helper.dart';
-import 'package:dresssew/screens/tailor_home.dart';
+import 'package:dresssew/screens/login.dart';
+import 'package:dresssew/screens/tailor/tailor_home.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:dresssew/utilities/custom_widgets/expandable_list_tile.dart';
+import 'package:dresssew/utilities/custom_widgets/item_rate_input_tile.dart';
 import 'package:dresssew/utilities/custom_widgets/rectangular_button.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -23,11 +27,6 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../main.dart';
-import '../models/tailor.dart';
-import '../utilities/custom_widgets/item_rate_input_tile.dart';
-import 'login.dart';
 
 class TailorRegistration extends StatefulWidget {
   final AppUser userData;

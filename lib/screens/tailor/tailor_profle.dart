@@ -34,62 +34,70 @@ class _TailorProfileState extends State<TailorProfile> {
       //   ],
       // ),
       body: Padding(
-        padding: EdgeInsets.symmetric(vertical: size.height * 0.03),
-        child: ListView(
+        padding: EdgeInsets.symmetric(vertical: size.height * 0.005),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Column(
-              children: [
-                CircleAvatar(
-                  radius: size.width * 0.2,
-                  backgroundColor: Colors.blue,
-                  child: CircleAvatar(
-                    radius: size.width * 0.2 - 1,
-                    backgroundColor: Colors.grey.shade300,
-                    backgroundImage: NetworkImage(
-                      widget.tailor.profileImageUrl!,
-                    ),
+            Expanded(
+              child: ListView(
+                children: [
+                  Column(
+                    children: [
+                      CircleAvatar(
+                        radius: size.width * 0.2,
+                        backgroundColor: Colors.blue,
+                        child: CircleAvatar(
+                          radius: size.width * 0.2 - 1,
+                          backgroundColor: Colors.grey.shade300,
+                          backgroundImage: NetworkImage(
+                            widget.tailor.profileImageUrl!,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.01),
+                      Text(
+                        widget.tailor.tailorName,
+                        style: kTitleStyle.copyWith(fontSize: 20),
+                      ),
+                    ],
                   ),
-                ),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-                Text(
-                  widget.tailor.tailorName,
-                  style: kTitleStyle.copyWith(fontSize: 20),
-                ),
-              ],
+                  const Divider(thickness: 0.2),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: MyPieChart(
+                          title: 'On-time delivery',
+                          chartValue: widget.tailor.onTimeDelivery!,
+                        ),
+                      ),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                      Flexible(
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                              right: MediaQuery.of(context).size.width * 0.07),
+                          child: MyPieChart(
+                            title: 'Rating',
+                            chartValue: widget.tailor.rating!,
+                            isRatingChart: true,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Divider(thickness: 0.5),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                  buildTailorInfoCard(),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                  buildShopInfoCard(),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                  buildContactInfoCard(),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                ],
+              ),
             ),
-            const Divider(thickness: 0.2),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Flexible(
-                  child: MyPieChart(
-                    title: 'On-time delivery',
-                    chartValue: widget.tailor.onTimeDelivery!,
-                  ),
-                ),
-                SizedBox(width: MediaQuery.of(context).size.width * 0.1),
-                Flexible(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                        right: MediaQuery.of(context).size.width * 0.07),
-                    child: MyPieChart(
-                      title: 'Rating',
-                      chartValue: widget.tailor.rating!,
-                      isRatingChart: true,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const Divider(thickness: 0.5),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-            buildTailorInfoCard(),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-            buildShopInfoCard(),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-            buildContactInfoCard(),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.01),
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10),

@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dresssew/main.dart';
 import 'package:dresssew/models/app_user.dart';
-import 'package:dresssew/screens/customer_registration.dart';
-import 'package:dresssew/screens/tailor_registration.dart';
+import 'package:dresssew/screens/customer/customer_registration.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -16,6 +15,7 @@ import 'package:loading_overlay/loading_overlay.dart';
 import 'package:location/location.dart';
 
 import '../utilities/custom_widgets/rectangular_button.dart';
+import 'tailor/tailor_registration.dart';
 
 class SignUp extends StatefulWidget {
   static const String id = '/signUp';

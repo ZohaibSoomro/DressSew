@@ -1,5 +1,5 @@
 import 'package:dresssew/models/tailor.dart';
-import 'package:dresssew/screens/tailor_profle.dart';
+import 'package:dresssew/screens/tailor/tailor_profle.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';

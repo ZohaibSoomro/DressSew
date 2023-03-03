@@ -1,18 +1,20 @@
 import 'package:dresssew/models/app_user.dart';
 import 'package:dresssew/networking/firestore_helper.dart';
-import 'package:dresssew/screens/customer_home.dart';
-import 'package:dresssew/screens/customer_registration.dart';
+import 'package:dresssew/screens/customer/customer_home.dart';
+import 'package:dresssew/screens/customer/customer_main_screen.dart';
+import 'package:dresssew/screens/customer/customer_registration.dart';
 import 'package:dresssew/screens/forgot_password.dart';
 import 'package:dresssew/screens/login.dart';
 import 'package:dresssew/screens/sign_up.dart';
-import 'package:dresssew/screens/tailor_home.dart';
-import 'package:dresssew/screens/tailor_registration.dart';
+import 'package:dresssew/screens/tailor/tailor_home.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'screens/tailor/tailor_registration.dart';
 
 bool? isLoggedIn;
 AppUser? appUser;
@@ -54,7 +56,7 @@ class DressSewApp extends StatelessWidget {
       home: isLoggedIn == null || !isLoggedIn!
           ? const Login()
           : appUser != null && appUser!.isRegistered
-              ? CustomerHomeView()
+              ? CustomerMainScreen()
               : appUser!.isTailor
                   ? TailorRegistration(userData: appUser!)
                   : CustomerRegistration(
@@ -62,6 +64,7 @@ class DressSewApp extends StatelessWidget {
                     ),
       routes: {
         CustomerHomeView.id: ((context) => CustomerHomeView()),
+        CustomerMainScreen.id: ((context) => CustomerMainScreen()),
         TailorHomeView.id: ((context) => TailorHomeView()),
         Login.id: ((context) => const Login()),
         SignUp.id: ((context) => const SignUp()),

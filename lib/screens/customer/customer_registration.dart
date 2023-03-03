@@ -5,6 +5,7 @@ import 'package:dresssew/models/app_user.dart';
 import 'package:dresssew/models/customer.dart';
 import 'package:dresssew/models/measurement.dart';
 import 'package:dresssew/networking/location_helper.dart';
+import 'package:dresssew/screens/customer/customer_main_screen.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:dresssew/utilities/my_dialog.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -19,13 +20,12 @@ import 'package:loading_overlay/loading_overlay.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../main.dart';
-import '../models/tailor.dart';
-import '../models/user_location.dart';
-import '../utilities/custom_widgets/rate_input_text_field.dart';
-import '../utilities/custom_widgets/rectangular_button.dart';
-import 'customer_home.dart';
-import 'login.dart';
+import '../../main.dart';
+import '../../models/tailor.dart';
+import '../../models/user_location.dart';
+import '../../utilities/custom_widgets/rate_input_text_field.dart';
+import '../../utilities/custom_widgets/rectangular_button.dart';
+import '../login.dart';
 
 class CustomerRegistration extends StatefulWidget {
   final AppUser userData;
@@ -265,7 +265,8 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
             }).then((value) async {
               if (taskSuccessful) {
                 if (widget.fromScreen == Login.id) {
-                  Navigator.pushReplacementNamed(context, CustomerHomeView.id);
+                  Navigator.pushReplacementNamed(
+                      context, CustomerMainScreen.id);
                 } else {
                   //1 inidicates it was a customer registration & was successful
                   if (mounted) {

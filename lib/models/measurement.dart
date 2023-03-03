@@ -33,5 +33,5 @@ const Map<String, String> measurementImages = {
   "waist": "assets/measurementImages/waist.jpg",
   "waistToAnkle": "assets/measurementImages/waistToAnkle.jpg",
   "shirtLength": "assets/measurementImages/shirtLength.jpg",
-  "sleeveLength": "assets/measurementImages/coatSleeveLength.jpg",
+  "sleeveLength": "assets/measurementImages/sleeveLength.jpg",
 };

@@ -32,6 +32,7 @@ dependencies:
   animated_toggle_switch: ^0.6.1
   location: ^4.4.0
   syncfusion_flutter_charts: ^20.4.52
+  animated_bottom_navigation_bar: ^1.1.0+1
   # flutter_native_splash-development.yaml
 flutter_native_splash:
   color: "#ffffff"
