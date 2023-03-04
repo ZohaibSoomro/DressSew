@@ -92,7 +92,7 @@ class Tailor {
 class OrdersPlaced {
   String customerId;
   String customerName;
-  int rating;
+  double rating;
   String reviewText;
   String orderId;
   String deliveryDate;
@@ -108,7 +108,7 @@ class OrdersPlaced {
   static OrdersPlaced fromJson(Map<String, dynamic> json) => OrdersPlaced(
         customerId: json['customer_id'],
         customerName: json['customer_name'],
-        rating: json['rating'],
+        rating: json['rating'].toDouble(),
         reviewText: json['review_text'],
         orderId: json['order_id'],
         deliveryDate: json['delivery_date'],

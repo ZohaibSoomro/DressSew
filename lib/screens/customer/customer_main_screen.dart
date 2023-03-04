@@ -1,5 +1,7 @@
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 import 'package:dresssew/main.dart';
+import 'package:dresssew/models/customer.dart';
+import 'package:dresssew/networking/firestore_helper.dart';
 import 'package:dresssew/screens/customer/customer_home.dart';
 import 'package:dresssew/screens/customer/customer_profile.dart';
 import 'package:dresssew/screens/customer/search_tailor.dart';
@@ -10,6 +12,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/config.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+Customer? currentCustomer;
 
 class CustomerMainScreen extends StatefulWidget {
   static const id = "/customer_main_screen";
@@ -22,6 +26,12 @@ class CustomerMainScreen extends StatefulWidget {
 class _CustomerMainScreenState extends State<CustomerMainScreen> {
   final controller = ZoomDrawerController();
   int index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    loadCurrentCustomer();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,5 +78,17 @@ class _CustomerMainScreenState extends State<CustomerMainScreen> {
         ),
       ),
     );
+  }
+
+  void loadCurrentCustomer() async {
+    final customer = await FireStoreHelper()
+        .getCustomerWithDocId(appUser!.customerOrTailorId!);
+    if (customer != null) {
+      currentCustomer = customer;
+      if (mounted) {
+        setState(() {});
+        print('Current customer loaded successfully.');
+      }
+    }
   }
 }

@@ -29,6 +29,24 @@ class FireStoreHelper {
     return null;
   }
 
+  Future<Tailor?> getTailorWithDocId(String id) async {
+    final result = await instance.collection("tailors").doc(id).get();
+    if (result.exists) {
+      final tailor = Tailor.fromJson(result.data() as Map<String, dynamic>);
+      return tailor;
+    }
+    return null;
+  }
+
+  Future<Customer?> getCustomerWithDocId(String id) async {
+    final result = await instance.collection("customers").doc(id).get();
+    if (result.exists) {
+      final customer = Customer.fromJson(result.data() as Map<String, dynamic>);
+      return customer;
+    }
+    return null;
+  }
+
   Future<Customer?> getCustomerWithEmail(String email) async {
     final result = await instance
         .collection("customers")
@@ -61,6 +79,15 @@ class FireStoreHelper {
     if (result.docs.isNotEmpty) {
       final user = AppUser.fromJson(result.docs.first.data());
       return user;
+    }
+    return null;
+  }
+
+  Future<AppUser?> getAppUserWithDocId(String id) async {
+    final result = await instance.collection("users").doc(id).get();
+    if (result.exists) {
+      final appUser = AppUser.fromJson(result.data() as Map<String, dynamic>);
+      return appUser;
     }
     return null;
   }

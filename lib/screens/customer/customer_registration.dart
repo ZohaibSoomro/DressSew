@@ -489,18 +489,6 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
     );
   }
 
-  static String spaceSeparatedNameOfMeasurement(String title) {
-    String str = "";
-    for (int i = 0; i < title.length; i++) {
-      if (title[i] == title[i].toUpperCase()) {
-        str += " ${title[i].toLowerCase()}";
-      } else {
-        str += title[i];
-      }
-    }
-    return str;
-  }
-
   Container buildMeasurementChoiceSelectionPage(Size size) {
     return Container(
       margin: EdgeInsets.only(top: size.height * 0.2),
@@ -948,4 +936,16 @@ class _CustomerRegistrationState extends State<CustomerRegistration> {
       },
     );
   }
+}
+
+String spaceSeparatedNameOfMeasurement(String title) {
+  String str = "";
+  for (int i = 0; i < title.length; i++) {
+    if (title[i] == title[i].toUpperCase()) {
+      str += " ${title[i].toLowerCase()}";
+    } else {
+      str += title[i];
+    }
+  }
+  return str;
 }

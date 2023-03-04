@@ -1,9 +1,12 @@
 import 'package:dresssew/models/tailor.dart';
+import 'package:dresssew/screens/customer/dress_sewing_item.dart';
 import 'package:dresssew/utilities/constants.dart';
 import 'package:dresssew/utilities/custom_widgets/rectangular_button.dart';
+import 'package:dresssew/utilities/custom_widgets/tailor_Card.dart';
 import 'package:dresssew/utilities/my_pie_chart.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TailorProfile extends StatefulWidget {
   const TailorProfile({Key? key, required this.tailor}) : super(key: key);
@@ -43,6 +46,15 @@ class _TailorProfileState extends State<TailorProfile> {
                 children: [
                   Column(
                     children: [
+                      Align(
+                        alignment: AlignmentDirectional.topStart,
+                        child: IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: Icon(
+                              FontAwesomeIcons.arrowLeft,
+                              color: Theme.of(context).primaryColor,
+                            )),
+                      ),
                       CircleAvatar(
                         radius: size.width * 0.2,
                         backgroundColor: Colors.blue,
@@ -63,30 +75,7 @@ class _TailorProfileState extends State<TailorProfile> {
                     ],
                   ),
                   const Divider(thickness: 0.2),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: MyPieChart(
-                          title: 'On-time delivery',
-                          chartValue: widget.tailor.onTimeDelivery!,
-                        ),
-                      ),
-                      SizedBox(width: MediaQuery.of(context).size.width * 0.1),
-                      Flexible(
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                              right: MediaQuery.of(context).size.width * 0.07),
-                          child: MyPieChart(
-                            title: 'Rating',
-                            chartValue: widget.tailor.rating!,
-                            isRatingChart: true,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  buildQualityItemsRow(),
                   const Divider(thickness: 0.5),
                   SizedBox(height: MediaQuery.of(context).size.height * 0.01),
                   buildTailorInfoCard(),
@@ -103,13 +92,46 @@ class _TailorProfileState extends State<TailorProfile> {
                   const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10),
               child: RectangularRoundedButton(
                 padding: EdgeInsets.symmetric(vertical: 10),
-                buttonName: 'Continue ',
-                onPressed: () {},
+                buttonName: 'Continue',
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => DressSewingChoiceScreen(
+                              chosenTailor: widget.tailor)));
+                },
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Row buildQualityItemsRow() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Flexible(
+          child: MyPieChart(
+            title: 'On-time delivery',
+            chartValue: widget.tailor.onTimeDelivery!,
+          ),
+        ),
+        SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+        Flexible(
+          child: Padding(
+            padding: EdgeInsets.only(
+                right: MediaQuery.of(context).size.width * 0.07),
+            child: MyPieChart(
+              title: 'Rating',
+              chartValue: widget.tailor.rating!,
+              isRatingChart: true,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -152,23 +174,17 @@ class _TailorProfileState extends State<TailorProfile> {
                       ).tr(),
                       SizedBox(
                           height: MediaQuery.of(context).size.height * 0.01),
-                      Wrap(
-                        spacing: 5,
-                        children: [
-                          ...List.generate(
-                            widget.tailor.expertise.length,
-                            (index) => InputChip(
-                              label: Text(
-                                widget.tailor.expertise[index],
-                                style: kTextStyle.copyWith(fontSize: 12),
-                              ).tr(),
-                              onSelected: (val) {},
-                              backgroundColor: Colors.grey.shade200,
-                              avatar: const FlutterLogo(),
-                            ),
-                          )
-                        ],
-                      ),
+                      widget.tailor.stitchingType == StitchingType.both
+                          ? Column(
+                              children: [
+                                buildExpertiseList("Gents", true),
+                                buildExpertiseList("Ladies", false),
+                              ],
+                            )
+                          : buildExpertiseList(
+                              widget.tailor.stitchingType.name,
+                              widget.tailor.stitchingType ==
+                                  StitchingType.gents),
                     ],
                   ),
                 ],
@@ -308,6 +324,46 @@ class _TailorProfileState extends State<TailorProfile> {
         height: MediaQuery.of(context).size.height * 0.2,
         decoration: decoration,
       ),
+    );
+  }
+
+  ExpansionTile buildExpertiseList(String listTitle, bool isForMen) {
+    return ExpansionTile(
+      tilePadding: EdgeInsets.zero,
+      initiallyExpanded: true,
+      title: Text(
+        capitalizeText(listTitle),
+        style: kInputStyle.copyWith(fontSize: 15),
+      ),
+      children: categorizeExpertise(widget.tailor.expertise, isForMen)
+          .keys
+          .map((key) {
+        return ListTile(
+          title: Text(
+            key,
+            style:
+                kInputStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+          subtitle: Wrap(
+            spacing: 5,
+            children: [
+              ...List.generate(
+                categorizeExpertise(widget.tailor.expertise, isForMen)[key]!
+                    .length,
+                (index) => InputChip(
+                  label: Text(
+                      categorizeExpertise(
+                          widget.tailor.expertise, isForMen)[key]![index],
+                      style: kTextStyle.copyWith(fontSize: 12)),
+                  onSelected: (val) {},
+                  backgroundColor: Colors.grey.shade200,
+                  avatar: const FlutterLogo(),
+                ),
+              )
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 
