@@ -18,8 +18,9 @@ class Tailor {
   bool? customizes;
   double? onTimeDelivery;
   double? rating;
-  List<OrdersPlaced> orders;
+  // List<DresssewOrder> orders;
   UserLocation location;
+  List<Review> reviews;
 
   Tailor({
     this.id,
@@ -33,9 +34,10 @@ class Tailor {
     this.onTimeDelivery = 100,
     this.rating = 0,
     required this.gender,
-    this.orders = const [],
+    // this.orders = const [],
     this.profileImageUrl,
     this.rates = const [],
+    this.reviews = const [],
     this.expertise = const [],
     required this.stitchingType,
     required this.location,
@@ -48,14 +50,19 @@ class Tailor {
         phoneNumber: json['phone_number'],
         shop: Shop.fromJson(json['shop']),
         email: json['email'],
+        reviews: (json['reviews'] != null
+            ? (json['reviews'] as List).map((e) => Review.fromJson(e)).toList()
+            : []),
         gender: getGender(json['gender']),
         experience: json['experience'],
         customizes: json['customizes'],
         onTimeDelivery: json['on_time_delivery']?.toDouble(),
         rating: json['rating']?.toDouble(),
-        orders: (json['orders'] as List)
-            .map((e) => OrdersPlaced.fromJson(e))
-            .toList(),
+        // orders: (json['orders'] != null
+        //     ? (json['orders'] as List)
+        //         .map((e) => DresssewOrder.fromJson(e))
+        //         .toList()
+        //     : []),
         rates: (json['rates'] as List).map((e) => Rates.fromJson(e)).toList(),
         expertise: json['expertise'].cast<String>(),
         stitchingType: getStitchingType(json['stitchingType']),
@@ -72,12 +79,13 @@ class Tailor {
         'gender': gender.name,
         'experience': experience,
         'shop': shop?.toJson(),
+        'reviews': reviews,
         'profile_image_url': profileImageUrl,
         'customizes': customizes,
         'on_time_delivery': onTimeDelivery,
         'user_location': location.toJson(),
         'rating': rating,
-        'orders': orders.map((e) => e.toJson()).toList(),
+        // 'orders': orders.map((e) => e.toJson()).toList(),
         'rates': rates.map((e) => e.toJson()).toList(),
         'expertise': expertise,
         'stitchingType': stitchingType.name,
@@ -89,38 +97,43 @@ class Tailor {
   }
 }
 
-class OrdersPlaced {
-  String customerId;
+class Review {
   String customerName;
+  String customerProfileUrl;
   double rating;
   String reviewText;
+  String reviewDate;
   String orderId;
-  String deliveryDate;
+  String category;
 
-  OrdersPlaced(
-      {required this.customerId,
-      required this.customerName,
-      required this.rating,
-      required this.reviewText,
-      required this.orderId,
-      required this.deliveryDate});
+  Review({
+    required this.customerProfileUrl,
+    required this.reviewDate,
+    required this.customerName,
+    required this.rating,
+    required this.reviewText,
+    required this.orderId,
+    required this.category,
+  });
 
-  static OrdersPlaced fromJson(Map<String, dynamic> json) => OrdersPlaced(
-        customerId: json['customer_id'],
+  static Review fromJson(Map<String, dynamic> json) => Review(
         customerName: json['customer_name'],
+        customerProfileUrl: json['profile_url'],
         rating: json['rating'].toDouble(),
         reviewText: json['review_text'],
         orderId: json['order_id'],
-        deliveryDate: json['delivery_date'],
+        reviewDate: json['review_date'],
+        category: json['category'],
       );
 
   Map<String, dynamic> toJson() => {
-        'customer_id': customerId,
         'customer_name': customerName,
+        'profile_url': customerProfileUrl,
         'rating': rating,
         'review_text': reviewText,
         'order_id': orderId,
-        'delivery_date': deliveryDate,
+        'review_date': reviewDate,
+        'category': category,
       };
 }
 

@@ -6,6 +6,7 @@ import 'package:dresssew/utilities/custom_widgets/tailor_Card.dart';
 import 'package:dresssew/utilities/my_pie_chart.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TailorProfile extends StatefulWidget {
@@ -84,6 +85,8 @@ class _TailorProfileState extends State<TailorProfile> {
                   SizedBox(height: MediaQuery.of(context).size.height * 0.01),
                   buildContactInfoCard(),
                   SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                  buildReviewsCard(),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.01),
                 ],
               ),
             ),
@@ -91,7 +94,7 @@ class _TailorProfileState extends State<TailorProfile> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10),
               child: RectangularRoundedButton(
-                padding: EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 10),
                 buttonName: 'Continue',
                 onPressed: () {
                   Navigator.push(
@@ -380,6 +383,87 @@ class _TailorProfileState extends State<TailorProfile> {
           style: kTextStyle,
         ).tr(),
       ],
+    );
+  }
+
+  Widget buildReviewsCard() {
+    return Card(
+      elevation: 1.0,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Reviews(${widget.tailor.reviews.length})',
+              style: kInputStyle.copyWith(color: Colors.grey),
+            ).tr(),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: List.generate(
+                  widget.tailor.reviews.length,
+                  (index) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: CircleAvatar(
+                      radius: 26,
+                      backgroundColor: Colors.blue,
+                      child: CircleAvatar(
+                        backgroundImage: NetworkImage(
+                            widget.tailor.reviews[index].customerProfileUrl),
+                        backgroundColor: Colors.white,
+                        radius: 25,
+                      ),
+                    ),
+                    title: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          widget.tailor.reviews[index].customerName,
+                          style: kInputStyle,
+                        ),
+                        Column(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.22,
+                              child: FittedBox(
+                                child: RatingBarIndicator(
+                                  rating: widget.tailor.reviews[index].rating,
+                                  itemBuilder: (context, index) => const Icon(
+                                    Icons.star,
+                                    color: Colors.amber,
+                                  ),
+                                  itemCount: 5,
+                                  itemSize: 15.0,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              'Rated ${widget.tailor.reviews[index].rating}',
+                              style: kTextStyle.copyWith(fontSize: 12),
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Text(
+                        widget.tailor.reviews[index].reviewText,
+                        style: kTextStyle.copyWith(fontSize: 12),
+                        textAlign: TextAlign.start,
+                      ),
+                    ),
+                    // trailing: ,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

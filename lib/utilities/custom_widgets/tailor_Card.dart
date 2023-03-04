@@ -38,7 +38,7 @@ class TailorCard extends StatelessWidget {
                   style: kInputStyle,
                 ),
                 subtitle: Text(
-                  "${tailor.shop!.name}(${tailor.shop!.city})",
+                  "${tailor.shop!.name}(${tailor.shop!.city}",
                   style: kTextStyle.copyWith(fontSize: 12),
                   textAlign: TextAlign.start,
                 ),
@@ -65,14 +65,15 @@ class TailorCard extends StatelessWidget {
                   children: [
                     Text(
                       "Stitches for: ",
-                      style: kInputStyle.copyWith(fontSize: 15),
+                      style: kInputStyle.copyWith(
+                          fontSize: 14, color: Colors.grey.shade600),
                     ).tr(),
                     SizedBox(width: MediaQuery.of(context).size.width * 0.01),
                     Text(
                       tailor.stitchingType == StitchingType.both
                           ? capitalizeText("Gents, Ladies.")
                           : capitalizeText('${tailor.stitchingType.name}.'),
-                      style: kTextStyle.copyWith(fontSize: 12),
+                      style: kTextStyle.copyWith(fontSize: 14),
                     ).tr(),
                   ],
                 ),
@@ -105,14 +106,18 @@ class TailorCard extends StatelessWidget {
     return ExpansionTile(
       title: Text(
         capitalizeText(listTitle),
-        style: kInputStyle.copyWith(fontSize: 15),
+        style: kInputStyle.copyWith(
+          fontSize: 14,
+        ),
       ),
       children: categorizeExpertise(tailor.expertise, isForMen).keys.map((key) {
         return ListTile(
           title: Text(
             key,
-            style:
-                kInputStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w600),
+            style: kInputStyle.copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600),
           ),
           subtitle: Wrap(
             spacing: 5,

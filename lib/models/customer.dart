@@ -7,7 +7,7 @@ class Customer {
   String name;
   String email;
   Gender? gender;
-  List<OrdersPlaced> orders;
+  List<Review> orders;
   String? phoneNumber;
   String? profileImageUrl;
   String? address;
@@ -61,9 +61,8 @@ class Customer {
             .toList(),
         phoneNumber: json['phone_number'],
         location: UserLocation.fromMap(json['user_location']),
-        orders: (json['orders'] as List)
-            .map((e) => OrdersPlaced.fromJson(e))
-            .toList());
+        orders:
+            (json['orders'] as List).map((e) => Review.fromJson(e)).toList());
   }
 
   @override
